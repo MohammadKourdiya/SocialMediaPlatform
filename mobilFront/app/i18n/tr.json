@@ -1,0 +1,15 @@
+{
+  "search": "Gönderilerde ara...",
+  "home": "Ana Sayfa",
+  "explore": "Keşfet",
+  "post": "Paylaş",
+  "likes": "Beğeniler",
+  "logout": "Çıkış",
+  "story": "Hikaye",
+  "likes_count": "{{count}} Beğeni",
+  "comments_count": "{{count}} Yorum",
+  "share": "Paylaş",
+  "ago": "önce",
+  "hours": "saat",
+  "minutes": "dakika"
+}

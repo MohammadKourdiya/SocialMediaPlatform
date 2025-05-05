@@ -1,0 +1,15 @@
+{
+  "search": "ابحث عن منشورات...",
+  "home": "الرئيسية",
+  "explore": "استكشف",
+  "post": "نشر",
+  "likes": "الإعجابات",
+  "logout": "خروج",
+  "story": "قصة",
+  "likes_count": "{{count}} إعجاب",
+  "comments_count": "{{count}} تعليق",
+  "share": "مشاركة",
+  "ago": "منذ",
+  "hours": "ساعات",
+  "minutes": "دقائق"
+}
