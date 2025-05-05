@@ -2,14 +2,16 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const mongoose = require("mongoose");
-const morgan = require("morgan");
 const rateLimit = require("express-rate-limit");
 const { createServer } = require("http");
 const { Server } = require("socket.io");
 const { initSocket } = require("./socket/socket");
 const connectDB = require("./utils/db");
+const morgan = require("morgan");
+const swaggerJsdoc = require("swagger-jsdoc");
+const swaggerUi = require("swagger-ui-express");
 
-const config = require("./config/config");
+const config = require("./config");
 const logger = require("./middlewares/logger");
 const { errorHandler } = require("./middlewares/error");
 
@@ -24,10 +26,7 @@ const httpServer = createServer(app);
 
 // Veritabanına bağlan
 mongoose
-  .connect(config.db.uri, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
+  .connect(config.db.uri)
   .then(() => console.log("MongoDB'ye bağlandı"))
   .catch((err) => console.error("MongoDB bağlantı hatası:", err));
 
@@ -42,6 +41,7 @@ app.use(
 );
 app.use(express.json()); // JSON ayrıştırma
 app.use(express.urlencoded({ extended: true })); // URL-encoded ayrıştırma
+app.use(morgan("dev"));
 
 // تكوين معدل الطلبات
 const limiter = rateLimit({
@@ -63,29 +63,65 @@ const io = new Server(httpServer, {
 // تهيئة Socket.IO
 initSocket(io);
 
+// Swagger tanımı
+const swaggerOptions = {
+  definition: {
+    openapi: "3.0.0",
+    info: {
+      title: "Sosyal Medya Platformu API",
+      version: "1.0.0",
+      description: "Sosyal Medya Platformu API Dokümantasyonu",
+      contact: {
+        name: "API Desteği",
+        email: "destek@example.com",
+      },
+    },
+    servers: [
+      {
+        url: "http://localhost:3001",
+        description: "Geliştirme Sunucusu",
+      },
+    ],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT",
+        },
+      },
+    },
+  },
+  apis: ["./routes/*.js"], // API rotalarının bulunduğu dizin
+};
+
+const swaggerSpec = swaggerJsdoc(swaggerOptions);
+
+// Swagger UI
+app.use(
+  "/api-docs",
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpec, {
+    customCss: ".swagger-ui .topbar { display: none }",
+    customSiteTitle: "Sosyal Medya API Dokümantasyonu",
+  })
+);
+
 // Ana rotalar
 
 // Ana sayfa
 app.get("/", (req, res) => {
-  res.json({
-    message: "API'ye Hoş Geldiniz",
-    version: "1.0.0",
-  });
-});
-
-// 404 işleyici
-app.use((req, res) => {
-  res.status(404).json({ message: "Sayfa bulunamadı" });
+  res.redirect("/api-docs");
 });
 
 // Hata işleyici
 app.use(errorHandler);
 
-// المسارات
+// Rotaları tanımla
 
-app.use("/api/users", userRoutes);
-app.use("/api/posts", postRoutes);
 app.use("/api/messages", messageRoutes);
+app.use("/api/posts", postRoutes);
+app.use("/api/users", userRoutes);
 
 // معالجة الأخطاء
 app.use((err, req, res, next) => {
@@ -96,22 +132,9 @@ app.use((err, req, res, next) => {
     error: process.env.NODE_ENV === "development" ? err.message : undefined,
   });
 });
-
-// تشغيل الخادم
-const PORT = process.env.PORT || 5000;
-
-const startServer = async () => {
-  try {
-    await connectDB();
-    httpServer.listen(PORT, () => {
-      console.log(`الخادم يعمل على المنفذ ${PORT}`);
-    });
-  } catch (error) {
-    console.error("فشل في تشغيل الخادم:", error);
-    process.exit(1);
-  }
-};
-
-startServer();
+// 404 işleyici
+app.use((req, res) => {
+  res.status(404).json({ message: "Sayfa bulunamadı" });
+});
 
 module.exports = app;

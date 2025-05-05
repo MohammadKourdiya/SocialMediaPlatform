@@ -3,7 +3,6 @@ const router = express.Router();
 const { protect, optionalAuth } = require("../middlewares/auth");
 const upload = require("../middlewares/multer");
 const postController = require("../controllers/post.controller");
-const commentController = require("../controllers/comment.controller");
 
 /**
  * @swagger
@@ -38,7 +37,7 @@ const commentController = require("../controllers/comment.controller");
  *           items:
  *             $ref: '#/components/schemas/Comment'
  */
-
+router.get("/home", protect, postController.getAllPost);
 /**
  * @swagger
  * /api/posts:
@@ -71,73 +70,7 @@ const commentController = require("../controllers/comment.controller");
  *             schema:
  *               $ref: '#/components/schemas/Post'
  */
-router.post("/", protect, upload.array("media", 5), postController.createPost);
-
-/**
- * @swagger
- * /api/posts/feed:
- *   get:
- *     summary: Get feed posts
- *     tags: [Posts]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: query
- *         name: page
- *         schema:
- *           type: integer
- *         description: Page number
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *         description: Number of posts per page
- *     responses:
- *       200:
- *         description: Feed posts retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Post'
- */
-router.get("/feed", protect, postController.getFeedPosts);
-
-/**
- * @swagger
- * /api/posts/user/{userId}:
- *   get:
- *     summary: Get user posts
- *     tags: [Posts]
- *     parameters:
- *       - in: path
- *         name: userId
- *         required: true
- *         schema:
- *           type: string
- *         description: ID of the user
- *       - in: query
- *         name: page
- *         schema:
- *           type: integer
- *         description: Page number
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *         description: Number of posts per page
- *     responses:
- *       200:
- *         description: User posts retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Post'
- */
-router.get("/user/:userId", optionalAuth, postController.getUserPosts);
+router.post("/", protect, upload.array("media", 5), postController.addNewPost);
 
 /**
  * @swagger
@@ -208,13 +141,8 @@ router.get("/user/:userId", optionalAuth, postController.getUserPosts);
  *       200:
  *         description: Post deleted successfully
  */
-router.get("/:id", optionalAuth, postController.getPost);
-router.put(
-  "/:id",
-  protect,
-  upload.array("media", 5),
-  postController.updatePost
-);
+router.get("/myposts", protect, postController.getUserPost);
+
 router.delete("/:id", protect, postController.deletePost);
 
 /**
@@ -247,79 +175,8 @@ router.delete("/:id", protect, postController.deletePost);
  *                 isLiked:
  *                   type: boolean
  */
-router.post("/:id/like", protect, postController.toggleLike);
-
-/**
- * @swagger
- * /api/posts/{postId}/comments:
- *   post:
- *     summary: Create comment on post
- *     tags: [Comments]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: postId
- *         required: true
- *         schema:
- *           type: string
- *         description: ID of the post
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - content
- *             properties:
- *               content:
- *                 type: string
- *               parentComment:
- *                 type: string
- *                 description: ID of parent comment for replies
- *     responses:
- *       201:
- *         description: Comment created successfully
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Comment'
- *   get:
- *     summary: Get post comments
- *     tags: [Comments]
- *     parameters:
- *       - in: path
- *         name: postId
- *         required: true
- *         schema:
- *           type: string
- *         description: ID of the post
- *       - in: query
- *         name: page
- *         schema:
- *           type: integer
- *         description: Page number
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *         description: Number of comments per page
- *     responses:
- *       200:
- *         description: Comments retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Comment'
- */
-router.post("/:postId/comments", protect, commentController.createComment);
-router.get(
-  "/:postId/comments",
-  optionalAuth,
-  commentController.getPostComments
-);
+router.post("/:id/like", protect, postController.likePost);
+router.post("/:id/comments", protect, postController.addComment);
+router.get("/:id/comments", postController.getCommentsOfPost);
 
 module.exports = router;

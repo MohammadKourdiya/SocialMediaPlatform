@@ -141,7 +141,7 @@ router.post("/login", userController.login);
  *             schema:
  *               $ref: '#/components/schemas/User'
  */
-router.get("/:username", userController.getUserProfile);
+router.get("/:username", userController.getProfile);
 
 // Protected routes
 /**
@@ -176,36 +176,6 @@ router.get("/:username", userController.getUserProfile);
  *               $ref: '#/components/schemas/User'
  */
 router.put("/profile", protect, userController.updateProfile);
-
-/**
- * @swagger
- * /api/users/{username}/follow:
- *   post:
- *     summary: Follow/Unfollow user
- *     tags: [Users]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: username
- *         required: true
- *         schema:
- *           type: string
- *         description: Username of the user to follow/unfollow
- *     responses:
- *       200:
- *         description: Follow/Unfollow successful
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                 following:
- *                   type: boolean
- */
-router.post("/:username/follow", protect, userController.toggleFollow);
 
 router.get("/profile", protect, userController.getProfile);
 router.put("/profile", protect, userController.updateProfile);

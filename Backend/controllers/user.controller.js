@@ -3,9 +3,17 @@ const { generateToken } = require("../utils/jwt");
 const { uploadToCloudinary } = require("../utils/cloudinary");
 
 // تسجيل مستخدم جديد
-exports.register = async (req, res) => {
+const register = async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { username, email, password, confirmPassword } = req.body;
+
+    // تحقق من تطابق كلمتي المرور
+    if (password !== confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        error: "كلمة المرور وتأكيد كلمة المرور غير متطابقين",
+      });
+    }
 
     // التحقق من وجود المستخدم
     const existingUser = await User.findOne({ $or: [{ email }, { username }] });
@@ -16,12 +24,20 @@ exports.register = async (req, res) => {
       });
     }
 
-    // إنشاء مستخدم جديد
+    // إنشاء مستخدم جديد بدون تخزين confirmPassword
     const user = await User.create({
       username,
       email,
       password,
+      confirmPassword,
     });
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        error: "فشل إنشاء الحساب",
+      });
+    }
 
     // إنشاء التوكن
     const token = generateToken(user._id);
@@ -47,7 +63,7 @@ exports.register = async (req, res) => {
 };
 
 // تسجيل الدخول
-exports.login = async (req, res) => {
+const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -84,7 +100,7 @@ exports.login = async (req, res) => {
 };
 
 // الحصول على الملف الشخصي
-exports.getProfile = async (req, res) => {
+const getProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
     if (!user) {
@@ -107,7 +123,7 @@ exports.getProfile = async (req, res) => {
 };
 
 // تحديث الملف الشخصي
-exports.updateProfile = async (req, res) => {
+const updateProfile = async (req, res) => {
   try {
     const { username, email, bio } = req.body;
     const user = await User.findById(req.user._id);
@@ -139,7 +155,7 @@ exports.updateProfile = async (req, res) => {
 };
 
 // تحديث صورة الملف الشخصي
-exports.updateProfilePicture = async (req, res) => {
+const updateProfilePicture = async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({
@@ -176,7 +192,7 @@ exports.updateProfilePicture = async (req, res) => {
 };
 
 // تغيير كلمة المرور
-exports.changePassword = async (req, res) => {
+const changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
     const user = await User.findById(req.user._id).select("+password");
@@ -213,7 +229,7 @@ exports.changePassword = async (req, res) => {
 };
 
 // البحث عن مستخدمين
-exports.searchUsers = async (req, res) => {
+const searchUsers = async (req, res) => {
   try {
     const { query } = req.query;
     const users = await User.find({
@@ -233,4 +249,14 @@ exports.searchUsers = async (req, res) => {
       error: error.message,
     });
   }
+};
+
+module.exports = {
+  register,
+  login,
+  getProfile,
+  updateProfile,
+  updateProfilePicture,
+  changePassword,
+  searchUsers,
 };
