@@ -11,7 +11,7 @@ const register = async (req, res) => {
     if (password !== confirmPassword) {
       return res.status(400).json({
         success: false,
-        error: "كلمة المرور وتأكيد كلمة المرور غير متطابقين",
+        error: "the password and confirm password do not match",
       });
     }
 
@@ -20,7 +20,7 @@ const register = async (req, res) => {
     if (existingUser) {
       return res.status(400).json({
         success: false,
-        error: "البريد الإلكتروني أو اسم المستخدم موجود بالفعل",
+        error: "this email or username is already taken",
       });
     }
 
@@ -35,7 +35,7 @@ const register = async (req, res) => {
     if (!user) {
       return res.status(400).json({
         success: false,
-        error: "فشل إنشاء الحساب",
+        error: "there was a problem creating the user",
       });
     }
 
@@ -44,9 +44,9 @@ const register = async (req, res) => {
 
     res.status(201).json({
       success: true,
+      message: "Hello, welcome to our social media platform!",
       data: {
         user: {
-          _id: user._id,
           username: user.username,
           email: user.email,
           profilePicture: user.profilePicture,
@@ -69,10 +69,11 @@ const login = async (req, res) => {
 
     // التحقق من وجود المستخدم وكلمة المرور
     const user = await User.findOne({ email }).select("+password");
-    if (!user || !(await user.matchPassword(password))) {
+
+    if (!user || !(await user.comparePassword(password))) {
       return res.status(401).json({
         success: false,
-        error: "البريد الإلكتروني أو كلمة المرور غير صحيحة",
+        error: "The email or password is incorrect",
       });
     }
 
@@ -81,6 +82,7 @@ const login = async (req, res) => {
 
     res.status(200).json({
       success: true,
+      message: "successfully logged in",
       data: {
         user: {
           _id: user._id,
@@ -94,7 +96,7 @@ const login = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      error: error.message,
+      message: error.message,
     });
   }
 };
@@ -106,7 +108,7 @@ const getProfile = async (req, res) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        error: "المستخدم غير موجود",
+        error: "the user not found",
       });
     }
 
@@ -131,7 +133,7 @@ const updateProfile = async (req, res) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        error: "المستخدم غير موجود",
+        error: "the user not found",
       });
     }
 
@@ -160,7 +162,7 @@ const updateProfilePicture = async (req, res) => {
     if (!req.file) {
       return res.status(400).json({
         success: false,
-        error: "يرجى تحميل صورة",
+        error: "please upload a file",
       });
     }
 
@@ -168,7 +170,7 @@ const updateProfilePicture = async (req, res) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        error: "المستخدم غير موجود",
+        error: "the user not found",
       });
     }
 

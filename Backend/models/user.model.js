@@ -47,6 +47,7 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
+
 // تحويل البيانات للعرض العام
 userSchema.methods.toPublicJSON = function () {
   return {

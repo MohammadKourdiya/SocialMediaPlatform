@@ -35,8 +35,10 @@ app.use(helmet()); // Güvenlik
 app.use(logger); // İstek günlüğü
 app.use(
   cors({
-    origin: config.allowedOrigins,
+    origin: config.cors.allowedOrigins,
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 app.use(express.json()); // JSON ayrıştırma
@@ -78,7 +80,7 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: "http://localhost:3001",
+        url: "http://localhost:5000",
         description: "Geliştirme Sunucusu",
       },
     ],

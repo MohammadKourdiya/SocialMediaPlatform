@@ -1,6 +1,15 @@
 const app = require("./app");
 const config = require("./config");
 
+const cors = require("cors");
+
+app.use(
+  cors({
+    origin: config.cors.clientUrl,
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
 const server = app.listen(config.port, () => {
   console.log(
     `Sunucu ${config.port} portunda ${config.nodeEnv} modunda çalışıyor`
