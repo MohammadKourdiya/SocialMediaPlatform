@@ -14,6 +14,8 @@ const server = app.listen(config.port, () => {
   console.log(
     `Sunucu ${config.port} portunda ${config.nodeEnv} modunda çalışıyor`
   );
+  console.log(`Server URL: http://${config.host}:${config.port}`);
+  console.log(`API Docs: http://localhost:${config.port}/api-docs`);
 });
 
 // Beklenmeyen hataları işle

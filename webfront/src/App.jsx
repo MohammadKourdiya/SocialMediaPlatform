@@ -24,7 +24,7 @@ const browserRouter = createBrowserRouter([
     ),
     children: [
       {
-        path: "/home",
+        index: true,
         element: (
           <ProtectedRoutes>
             <Home />
@@ -32,10 +32,17 @@ const browserRouter = createBrowserRouter([
         ),
       },
       {
-        path: "/profile/:id",
+        path: "home",
         element: (
           <ProtectedRoutes>
-            {" "}
+            <Home />
+          </ProtectedRoutes>
+        ),
+      },
+      {
+        path: "profile/:id",
+        element: (
+          <ProtectedRoutes>
             <Profile />
           </ProtectedRoutes>
         ),
