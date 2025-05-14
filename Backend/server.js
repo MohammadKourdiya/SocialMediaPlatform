@@ -1,38 +1,15 @@
-const app = require("./app");
+const httpServer = require("./app");
 const config = require("./config");
 
 const cors = require("cors");
 
-app.use(
-  cors({
-    origin: config.cors.clientUrl,
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
+// ⚠️ إذا كنت بحاجة إلى CORS هنا، الأفضل يكون داخل app.js بدل ما تكرره
+// ممكن تتجاهله هنا لأنك عرّفته مسبقاً في app.js
 
-const server = app.listen(config.port, () => {
+httpServer.listen(config.port, () => {
   console.log(
     `Sunucu ${config.port} portunda ${config.nodeEnv} modunda çalışıyor`
   );
   console.log(`Server URL: http://${config.host}:${config.port}`);
   console.log(`API Docs: http://localhost:${config.port}/api-docs`);
-});
-
-// Beklenmeyen hataları işle
-process.on("unhandledRejection", (err) => {
-  console.log("Beklenmeyen hata! 💥 Sunucu kapatılıyor...");
-  console.error("Hata:", err);
-  server.close(() => {
-    process.exit(1);
-  });
-});
-
-// SIGTERM sinyalini işle
-process.on("SIGTERM", () => {
-  console.log(
-    "👋 SIGTERM sinyali alındı. Sunucu güvenli bir şekilde kapatılıyor"
-  );
-  server.close(() => {
-    console.log("💥 İşlem sonlandırıldı!");
-  });
 });

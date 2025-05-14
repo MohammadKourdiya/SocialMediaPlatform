@@ -27,7 +27,7 @@ const Login = () => {
     try {
       setLoading(true);
       const res = await axios.post(
-        "https://instaclone-g9h5.onrender.com/api/v1/user/login",
+        "http://localhost:5000/api/users/login",
         input,
         {
           headers: {
@@ -36,10 +36,12 @@ const Login = () => {
           withCredentials: true,
         }
       );
+      console.log(res);
       if (res.data.success) {
-        dispatch(setAuthUser(res.data.user));
+        dispatch(setAuthUser(res.data.data.user));
+
         navigate("/");
-        toast.success(res.data.message);
+        toast.success(res.data.data.message);
         setInput({
           email: "",
           password: "",

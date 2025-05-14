@@ -10,7 +10,6 @@ const connectDB = require("./utils/db");
 const morgan = require("morgan");
 const swaggerJsdoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
-
 const config = require("./config");
 const logger = require("./middlewares/logger");
 const { errorHandler } = require("./middlewares/error");
@@ -139,4 +138,4 @@ app.use((req, res) => {
   res.status(404).json({ message: "Sayfa bulunamadı" });
 });
 
-module.exports = app;
+module.exports = httpServer;
