@@ -13,7 +13,7 @@ import { setPosts } from "../redux/postSlice";
 const CreatePost = ({ open, setOpen }) => {
   const imageRef = useRef();
   const [file, setFile] = useState("");
-  const [caption, setCaption] = useState("");
+  const [content, setContent] = useState("");
   const [imagePreview, setImagePreview] = useState("");
   const [loading, setLoading] = useState(false);
   const { user } = useSelector((store) => store.auth);
@@ -28,19 +28,24 @@ const CreatePost = ({ open, setOpen }) => {
       setImagePreview(dataUrl);
     }
   };
-
+  const token = localStorage.getItem("token");
   const createPostHandler = async (e) => {
     const formData = new FormData();
-    formData.append("caption", caption);
-    if (imagePreview) formData.append("image", file);
+
+    formData.append("content", content);
+    if (imagePreview) formData.append("file", file);
     try {
       setLoading(true);
+
       const res = await axios.post(
         "http://localhost:5000/api/posts",
         formData,
         {
           headers: {
             "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`, // Ensure you have the token available
+            
+
           },
           withCredentials: true,
         }
@@ -49,9 +54,11 @@ const CreatePost = ({ open, setOpen }) => {
         dispatch(setPosts([res.data.post, ...posts])); // [1] -> [1,2] -> total element = 2
         toast.success(res.data.message);
         setOpen(false);
+        console.log(res.data.post);
       }
     } catch (error) {
-      toast.error(error.response.data.message);
+      console.log(error);
+      toast.error(error.response?.data?.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -74,8 +81,8 @@ const CreatePost = ({ open, setOpen }) => {
           </div>
         </div>
         <Textarea
-          value={caption}
-          onChange={(e) => setCaption(e.target.value)}
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
           className="focus-visible:ring-transparent border-none"
           placeholder="Write a caption..."
         />

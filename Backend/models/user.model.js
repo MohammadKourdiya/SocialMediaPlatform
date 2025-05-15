@@ -47,7 +47,6 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
-
 // تحويل البيانات للعرض العام
 userSchema.methods.toPublicJSON = function () {
   return {
@@ -62,4 +61,4 @@ userSchema.methods.toPublicJSON = function () {
 };
 
 const User = mongoose.model("User", userSchema);
-module.exports = User;
+module.exports = { User };

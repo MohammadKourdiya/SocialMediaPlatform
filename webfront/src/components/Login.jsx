@@ -22,7 +22,7 @@ const Login = () => {
     setInput({ ...input, [e.target.name]: e.target.value });
   };
 
-  const signupHandler = async (e) => {
+  const signinHandler = async (e) => {
     e.preventDefault();
     try {
       setLoading(true);
@@ -40,6 +40,9 @@ const Login = () => {
       if (res.data.success) {
         dispatch(setAuthUser(res.data.data.user));
 
+        // 🛑 مهم جداً: خزّن التوكن
+        localStorage.setItem("token", res.data.data.token);
+
         navigate("/");
         toast.success(res.data.data.message);
         setInput({
@@ -49,7 +52,7 @@ const Login = () => {
       }
     } catch (error) {
       console.log(error);
-      toast.error(error.response.data.message);
+      // toast.error(error);
     } finally {
       setLoading(false);
     }
@@ -73,7 +76,7 @@ const Login = () => {
             </p>
           </div>
 
-          <form onSubmit={signupHandler} className="space-y-6">
+          <form onSubmit={signinHandler} className="space-y-6">
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">
                 البريد الإلكتروني

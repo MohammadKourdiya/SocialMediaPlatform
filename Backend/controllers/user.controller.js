@@ -1,4 +1,4 @@
-const User = require("../models/user.model");
+const { User } = require("../models/user.model");
 const { generateToken } = require("../utils/jwt");
 const { uploadToCloudinary } = require("../utils/cloudinary");
 
@@ -94,6 +94,7 @@ const login = async (req, res) => {
       },
     });
   } catch (error) {
+    console.log(error);
     res.status(500).json({
       success: false,
       message: error.message,

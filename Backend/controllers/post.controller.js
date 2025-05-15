@@ -8,28 +8,30 @@ const { getProfile } = require("./user.controller.js");
 
 const addNewPost = async (req, res) => {
   try {
-    const { caption } = req.body;
-    const image = req.file;
-    const authorId = req.id;
+    const { content } = req.body;
+    const file = req.file;
+    const authorId = req.user;
 
-    if (!image) return res.status(400).json({ message: "Image required" });
+    console.log(req.body);
+    console.log(req.file);
+    console.log("req.user:", req.user);
 
-    // image upload
-    const optimizedImageBuffer = await sharp(image.buffer)
-      .resize({ width: 800, height: 800, fit: "inside" })
-      .toFormat("jpeg", { quality: 80 })
-      .toBuffer();
+    if (!file) return res.status(400).json({ message: "File required" });
 
-    // buffer to data uri
-    const fileUri = `data:image/jpeg;base64,${optimizedImageBuffer.toString(
+    const fileUri = `data:${file.mimetype};base64,${file.buffer.toString(
       "base64"
     )}`;
-    const cloudResponse = await cloudinary.uploader.upload(fileUri);
+
+    const cloudResponse = await cloudinary.uploader.upload(fileUri, {
+      resource_type: "auto",
+    });
+
     const post = await Post.create({
-      caption,
+      content,
       image: cloudResponse.secure_url,
       author: authorId,
     });
+
     const user = await User.findById(authorId);
     if (user) {
       user.posts.push(post._id);

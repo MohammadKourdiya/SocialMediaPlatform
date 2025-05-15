@@ -4,12 +4,14 @@ const postSchema = new mongoose.Schema(
   {
     content: {
       type: String,
+    },
+    author: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "author",
       required: true,
     },
-    user: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
+    image: {
+      type: String, // <-- أضف هذا السطر
     },
     likes: [
       {
@@ -17,7 +19,12 @@ const postSchema = new mongoose.Schema(
         ref: "User",
       },
     ],
-    // المرحلة الأولى - وظائف أساسية فقط
+    comments: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Comment",
+      },
+    ],
   },
   {
     timestamps: true,
@@ -29,13 +36,14 @@ postSchema.methods.toJSON = function () {
   return {
     id: this._id,
     content: this.content,
-    user: this.user,
+    author: this.author,
     likes: this.likes,
     likesCount: this.likes.length,
+    comments: this.comments,
     createdAt: this.createdAt,
     updatedAt: this.updatedAt,
   };
 };
 
 const Post = mongoose.model("Post", postSchema);
-module.exports = Post;
+module.exports = { Post };

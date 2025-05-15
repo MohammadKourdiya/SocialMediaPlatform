@@ -10,6 +10,7 @@ const useGetSuggestedUsers = () => {
       try {
         const res = await axios.get("http://localhost:5000/api/users/", {
           withCredentials: true,
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         });
         if (res.data.success) {
           dispatch(setSuggestedUsers(res.data.users));

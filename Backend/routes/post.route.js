@@ -1,7 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const { protect, optionalAuth } = require("../middlewares/auth");
-const upload = require("../middlewares/multer");
+const multer = require("multer");
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 const postController = require("../controllers/post.controller");
 
 /**
@@ -70,7 +72,7 @@ router.get("/home", protect, postController.getAllPost);
  *             schema:
  *               $ref: '#/components/schemas/Post'
  */
-router.post("/", protect, upload.array("media", 5), postController.addNewPost);
+router.post("/", protect, upload.single("file"), postController.addNewPost);
 
 /**
  * @swagger

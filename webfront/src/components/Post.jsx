@@ -36,6 +36,7 @@ const Post = ({ post }) => {
       const res = await axios.get(
         `https://instaclone-g9h5.onrender.com/api/v1/post/${post._id}/${action}`,
         { withCredentials: true }
+        
       );
       if (res.data.success) {
         const updatedLikes = liked ? postLike - 1 : postLike + 1;
