@@ -29,6 +29,12 @@ const userSchema = new mongoose.Schema(
       trim: true,
     },
     // المرحلة الأولى - حقول أساسية فقط
+    posts: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Post",
+      },
+    ],
   },
   {
     timestamps: true,
