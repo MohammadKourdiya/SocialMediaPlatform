@@ -10,7 +10,9 @@ const useGetAllPost = () => {
       try {
         const res = await axios.get("http://localhost:5000/api/posts/home", {
           withCredentials: true,
-          Authurization: `Bearer ${localStorage.getItem("token")}`,
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         });
         if (res.data.success) {
           console.log(res.data.posts);

@@ -43,9 +43,7 @@ const CreatePost = ({ open, setOpen }) => {
         {
           headers: {
             "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${token}`, // Ensure you have the token available
-            
-
+            Authorization: `Bearer ${token}`,
           },
           withCredentials: true,
         }

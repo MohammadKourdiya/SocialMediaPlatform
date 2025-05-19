@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const config = require("../config");
 
 /**
  * إنشاء توكن JWT للمستخدم
@@ -15,9 +16,9 @@ const generateToken = (user) => {
       username: user.username,
       email: user.email,
     },
-    process.env.JWT_SECRET,
+    config.jwt.secret,
     {
-      expiresIn: "30d", // صلاحية التوكن 30 يوم
+      expiresIn: config.jwt.expiresIn,
     }
   );
 };
