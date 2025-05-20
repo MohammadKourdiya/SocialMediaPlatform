@@ -12,6 +12,7 @@ const Signup = () => {
     username: "",
     email: "",
     password: "",
+    confirmPassword: "",
   });
   const [loading, setLoading] = useState(false);
   const { user } = useSelector((store) => store.auth);
@@ -23,16 +24,22 @@ const Signup = () => {
 
   const signupHandler = async (e) => {
     e.preventDefault();
+
+    // التحقق من تطابق كلمتي المرور
+    if (input.password !== input.confirmPassword) {
+      toast.error("كلمات المرور غير متطابقة");
+      return;
+    }
+
     try {
       setLoading(true);
       const res = await axios.post(
-        "https://instaclone-g9h5.onrender.com/api/v1/user/register",
+        "http://localhost:5000/api/users/register",
         input,
         {
           headers: {
             "Content-Type": "application/json",
           },
-          withCredentials: true,
         }
       );
       if (res.data.success) {
@@ -42,11 +49,12 @@ const Signup = () => {
           username: "",
           email: "",
           password: "",
+          confirmPassword: "",
         });
       }
     } catch (error) {
       console.log(error);
-      toast.error(error.response.data.message);
+      toast.error(error.response?.data?.error || "حدث خطأ أثناء التسجيل");
     } finally {
       setLoading(false);
     }
@@ -57,6 +65,7 @@ const Signup = () => {
       navigate("/");
     }
   }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
@@ -80,8 +89,9 @@ const Signup = () => {
                 name="username"
                 value={input.username}
                 onChange={changeEventHandler}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="أدخل اسم المستخدم"
+                required
               />
             </div>
 
@@ -94,8 +104,9 @@ const Signup = () => {
                 name="email"
                 value={input.email}
                 onChange={changeEventHandler}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="أدخل بريدك الإلكتروني"
+                required
               />
             </div>
 
@@ -108,21 +119,24 @@ const Signup = () => {
                 name="password"
                 value={input.password}
                 onChange={changeEventHandler}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="أدخل كلمة المرور"
+                required
               />
             </div>
+
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">
-                كلمة المرور
+                تأكيد كلمة المرور
               </label>
               <Input
                 type="password"
-                name="password"
-                value={input.password}
+                name="confirmPassword"
+                value={input.confirmPassword}
                 onChange={changeEventHandler}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white"
-                placeholder="أدخل كلمة المرور"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="أعد إدخال كلمة المرور"
+                required
               />
             </div>
 

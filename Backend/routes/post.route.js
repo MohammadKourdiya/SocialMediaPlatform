@@ -178,6 +178,102 @@ router.delete("/:id", protect, postController.deletePost);
  *                   type: boolean
  */
 router.post("/:id/like", protect, postController.likePost);
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Comment:
+ *       type: object
+ *       required:
+ *         - content
+ *         - user
+ *         - post
+ *       properties:
+ *         content:
+ *           type: string
+ *           description: محتوى التعليق
+ *         user:
+ *           type: object
+ *           description: المستخدم الذي كتب التعليق
+ *         post:
+ *           type: string
+ *           description: معرف المنشور الذي تم التعليق عليه
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *           description: تاريخ إنشاء التعليق
+ */
+
+/**
+ * @swagger
+ * /api/posts/{id}/comments:
+ *   post:
+ *     summary: إضافة تعليق جديد على منشور
+ *     tags: [Comments]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: معرف المنشور
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - text
+ *             properties:
+ *               text:
+ *                 type: string
+ *                 description: محتوى التعليق
+ *     responses:
+ *       201:
+ *         description: تم إضافة التعليق بنجاح
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 comment:
+ *                   $ref: '#/components/schemas/Comment'
+ *   get:
+ *     summary: الحصول على تعليقات منشور معين
+ *     tags: [Comments]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: معرف المنشور
+ *     responses:
+ *       200:
+ *         description: تم جلب التعليقات بنجاح
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 comments:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Comment'
+ *       404:
+ *         description: لم يتم العثور على تعليقات
+ */
+
 router.post("/:id/comments", protect, postController.addComment);
 router.get("/:id/comments", postController.getCommentsOfPost);
 

@@ -29,40 +29,44 @@ const PostCard = ({ post, onLike, onComment, onShare }) => {
       {/* رأس المنشور */}
       <View style={styles.header}>
         <Image
-          source="https://media.istockphoto.com/id/1337144146/vector/default-avatar-profile-icon-vector.jpg?s=612x612&w=0&k=20&c=BIbFwuv7FxTWvh5S3vB6bkT0Qv8Vn8N5Ffseq84ClGI="
+          source={{
+            uri:
+              post.author?.profilePicture ||
+              "https://media.istockphoto.com/id/1337144146/vector/default-avatar-profile-icon-vector.jpg?s=612x612&w=0&k=20&c=BIbFwuv7FxTWvh5S3vB6bkT0Qv8Vn8N5Ffseq84ClGI=",
+          }}
           style={styles.avatar}
         />
         <View style={styles.userInfo}>
-          <Text style={styles.username}>"post.username"</Text>
-          <Text style={styles.timestamp}>"post.timestamp"</Text>
+          <Text style={styles.username}>{post.author?.username}</Text>
+          <Text style={styles.timestamp}>
+            {new Date(post.createdAt).toLocaleDateString("ar-SA")}
+          </Text>
         </View>
         <TouchableOpacity style={styles.moreButton}>
           <Ionicons name="ellipsis-horizontal" size={24} color="#666" />
         </TouchableOpacity>
       </View>
+
       {/* محتوى المنشور */}
-      <Text style={styles.content}>"post.content"</Text>
+      <Text style={styles.content}>{post.content}</Text>
+
       {/* صور المنشور */}
-      //post.images && post.images.length > 0 && (
-      <View style={styles.imageContainer}>
-        // post.images.map((image, index) => (
-        <Image
-          key={"index"}
-          source={{
-            uri: "https://media.istockphoto.com/id/1337144146/vector/default-avatar-profile-icon-vector.jpg?s=612x612&w=0&k=20&c=BIbFwuv7FxTWvh5S3vB6bkT0Qv8Vn8N5Ffseq84ClGI= ",
-          }}
-          style={styles.postImage}
-          resizeMode="cover"
-        />
-        //))}
-      </View>
-      //)}
+      {post.image && (
+        <View style={styles.imageContainer}>
+          <Image
+            source={{ uri: post.image }}
+            style={styles.postImage}
+            resizeMode="cover"
+          />
+        </View>
+      )}
+
       {/* إحصائيات المنشور */}
       <View style={styles.stats}>
-        <Text style={styles.statText}>post.likes إعجابات</Text>
-        <Text style={styles.statText}>post.comments تعليقات</Text>
-        <Text style={styles.statText}>post.shares مشاركات</Text>
+        <Text style={styles.statText}>{post.likesCount || 0} إعجاب</Text>
+        <Text style={styles.statText}>{post.comments?.length || 0} تعليق</Text>
       </View>
+
       {/* أزرار التفاعل */}
       <View style={styles.actions}>
         <TouchableOpacity style={styles.actionButton} onPress={handleLike}>
@@ -71,7 +75,9 @@ const PostCard = ({ post, onLike, onComment, onShare }) => {
             size={24}
             color={isLiked ? "#FF3B30" : "#666"}
           />
-          <Text style={styles.actionText}>إعجاب</Text>
+          <Text style={[styles.actionText, isLiked && styles.likedText]}>
+            إعجاب
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.actionButton} onPress={handleComment}>
@@ -87,13 +93,14 @@ const PostCard = ({ post, onLike, onComment, onShare }) => {
           <Text style={styles.actionText}>مشاركة</Text>
         </TouchableOpacity>
       </View>
+
       {/* قسم التعليقات */}
-      {showComments && (
+      {showComments && post.comments && post.comments.length > 0 && (
         <View style={styles.commentsSection}>
-          {post.commentsList &&
-            post.commentsList.map((comment, index) => (
-              <Comment key={index} comment={comment} />
-            ))}
+          <Text style={styles.commentsTitle}>التعليقات</Text>
+          {post.comments.map((comment, index) => (
+            <Comment key={index} comment={comment} />
+          ))}
         </View>
       )}
     </View>
@@ -149,12 +156,13 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     marginBottom: 12,
+    borderRadius: 8,
+    overflow: "hidden",
   },
   postImage: {
     width: "100%",
-    height: 200,
+    height: 300,
     borderRadius: 8,
-    marginBottom: 8,
   },
   stats: {
     flexDirection: "row",
@@ -168,6 +176,7 @@ const styles = StyleSheet.create({
   statText: {
     fontSize: 14,
     color: "#666",
+    fontWeight: "500",
   },
   actions: {
     flexDirection: "row",
@@ -184,11 +193,20 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#666",
   },
+  likedText: {
+    color: "#FF3B30",
+  },
   commentsSection: {
     marginTop: 8,
     paddingTop: 8,
     borderTopWidth: 1,
     borderTopColor: "#eee",
+  },
+  commentsTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#333",
+    marginBottom: 8,
   },
 });
 

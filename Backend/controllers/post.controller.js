@@ -100,41 +100,83 @@ const getUserPost = async (req, res) => {
 };
 const likePost = async (req, res) => {
   try {
-    const likeKrneWalaUserKiId = req.id;
+    const likeKrneWalaUserKiId = req.user;
     const postId = req.params.id;
-    const post = await Post.findById(postId);
-    if (!post)
-      return res
-        .status(404)
-        .json({ message: "Post not found", success: false });
 
-    // like logic started
-    await post.updateOne({ $addToSet: { likes: likeKrneWalaUserKiId } });
-    await post.save();
-
-    // implement socket io for real time notification
-    const user = await User.findById(likeKrneWalaUserKiId).select(
-      "username profilePicture"
-    );
-
-    const postOwnerId = post.author.toString();
-    if (postOwnerId !== likeKrneWalaUserKiId) {
-      // emit a notification event
-      const notification = {
-        type: "like",
-        userId: likeKrneWalaUserKiId,
-        userDetails: user,
-        postId,
-        message: "Your post was liked",
-      };
-      const postOwnerSocketId = getReceiverSocketId(postOwnerId);
-      io.to(postOwnerSocketId).emit("notification", notification);
+    // التحقق من صحة معرف المنشور
+    if (!postId || !likeKrneWalaUserKiId) {
+      return res.status(400).json({
+        message: "معرف المنشور أو المستخدم غير صالح",
+        success: false,
+      });
     }
 
-    return res.status(200).json({ message: "Post liked", success: true });
+    // البحث عن المنشور وتحديثه في عملية واحدة
+    const post = await Post.findByIdAndUpdate(
+      postId,
+      [
+        {
+          $set: {
+            likes: {
+              $cond: {
+                if: { $in: [likeKrneWalaUserKiId, "$likes"] },
+                then: {
+                  $filter: {
+                    input: "$likes",
+                    as: "like",
+                    cond: { $ne: ["$$like", likeKrneWalaUserKiId] },
+                  },
+                },
+                else: { $concatArrays: ["$likes", [likeKrneWalaUserKiId]] },
+              },
+            },
+          },
+        },
+      ],
+      { new: true }
+    );
+
+    if (!post) {
+      return res.status(404).json({
+        message: "لم يتم العثور على المنشور",
+        success: false,
+      });
+    }
+
+    const isLiked = post.likes.includes(likeKrneWalaUserKiId);
+
+    // إرسال إشعار فقط عند الإعجاب (وليس عند إلغاء الإعجاب)
+    if (isLiked) {
+      const user = await User.findById(likeKrneWalaUserKiId).select(
+        "username profilePicture"
+      );
+
+      const postOwnerId = post.author.toString();
+      if (postOwnerId !== likeKrneWalaUserKiId) {
+        const notification = {
+          type: "like",
+          userId: likeKrneWalaUserKiId,
+          userDetails: user,
+          postId,
+          message: "تم الإعجاب بمنشورك",
+        };
+        const postOwnerSocketId = getReceiverSocketId(postOwnerId);
+        io.to(postOwnerSocketId).emit("notification", notification);
+      }
+    }
+
+    return res.status(200).json({
+      message: isLiked ? "تم الإعجاب" : "تم إلغاء الإعجاب",
+      success: true,
+      isLiked,
+      likesCount: post.likes.length,
+    });
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({ message: "Server error", success: false });
+    console.error("خطأ في likePost:", error);
+    return res.status(500).json({
+      message: "خطأ في الخادم",
+      success: false,
+    });
   }
 };
 const addComment = async (req, res) => {

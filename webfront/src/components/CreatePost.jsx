@@ -33,7 +33,9 @@ const CreatePost = ({ open, setOpen }) => {
     const formData = new FormData();
 
     formData.append("content", content);
-    if (imagePreview) formData.append("file", file);
+    formData.append("userId", user._id);
+
+    formData.append("file", file);
     try {
       setLoading(true);
 

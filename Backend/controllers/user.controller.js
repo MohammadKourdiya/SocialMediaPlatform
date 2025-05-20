@@ -7,11 +7,19 @@ const register = async (req, res) => {
   try {
     const { username, email, password, confirmPassword } = req.body;
 
+    // التحقق من وجود جميع الحقول المطلوبة
+    if (!username || !email || !password || !confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        error: "جميع الحقول مطلوبة",
+      });
+    }
+
     // تحقق من تطابق كلمتي المرور
     if (password !== confirmPassword) {
       return res.status(400).json({
         success: false,
-        error: "the password and confirm password do not match",
+        error: "كلمات المرور غير متطابقة",
       });
     }
 
@@ -20,22 +28,21 @@ const register = async (req, res) => {
     if (existingUser) {
       return res.status(400).json({
         success: false,
-        error: "this email or username is already taken",
+        error: "البريد الإلكتروني أو اسم المستخدم مستخدم بالفعل",
       });
     }
 
-    // إنشاء مستخدم جديد بدون تخزين confirmPassword
+    // إنشاء مستخدم جديد
     const user = await User.create({
       username,
       email,
       password,
-      confirmPassword,
     });
 
     if (!user) {
       return res.status(400).json({
         success: false,
-        error: "there was a problem creating the user",
+        error: "حدث خطأ أثناء إنشاء المستخدم",
       });
     }
 
@@ -44,7 +51,7 @@ const register = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: "Hello, welcome to our social media platform!",
+      message: "مرحباً بك في منصتنا الاجتماعية!",
       data: {
         user: {
           username: user.username,

@@ -14,9 +14,14 @@ const useGetAllPost = () => {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         });
-        if (res.data.success) {
-          console.log(res.data.posts);
-          dispatch(setPosts(res.data.posts));
+        if (res.data.success && Array.isArray(res.data.posts)) {
+          const postsWithDefaults = res.data.posts.map((post) => ({
+            ...post,
+            likes: post.likes || [],
+            comments: post.comments || [],
+            content: post.content || "",
+          }));
+          dispatch(setPosts(postsWithDefaults));
         }
       } catch (error) {
         console.log(error);

@@ -23,6 +23,7 @@ const postSchema = new mongoose.Schema(
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Comment",
+        
       },
     ],
   },
@@ -37,6 +38,7 @@ postSchema.methods.toJSON = function () {
     id: this._id,
     content: this.content,
     author: this.author,
+    image: this.image,
     likes: this.likes,
     likesCount: this.likes.length,
     comments: this.comments,

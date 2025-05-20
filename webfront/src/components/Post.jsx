@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog";
 import { Bookmark, MessageCircle, MoreHorizontal, Send } from "lucide-react";
@@ -12,13 +12,32 @@ import { setPosts, setSelectedPost } from "../redux/postSlice";
 import { Badge } from "./ui/badge";
 
 const Post = ({ post }) => {
+  // التحقق من البيانات عند استلام المنشور
+  console.log("Post Data:", post);
+
   const [text, setText] = useState("");
   const [open, setOpen] = useState(false);
   const { user } = useSelector((store) => store.auth);
   const { posts } = useSelector((store) => store.post);
-  const [liked, setLiked] = useState(post.likes.includes(user?._id) || false);
-  const [postLike, setPostLike] = useState(post.likes.length);
-  const [comment, setComment] = useState(post.comments);
+  const postId = post?.id || post?._id;
+  // التأكد من وجود البيانات الأساسية وتوحيد استخدام المعرف
+  const postData = useMemo(
+    () => ({
+      _id: post?.id,
+      likes: Array.isArray(post?.likes) ? post.likes : [],
+      comments: Array.isArray(post?.comments) ? post.comments : [],
+      content: post?.content || "",
+      author: post?.author || {},
+    }),
+    [post]
+  );
+
+  console.log("sasdsad,", postData._id);
+  const [liked, setLiked] = useState(
+    postData.likes.includes(user?._id) || false
+  );
+  const [postLike, setPostLike] = useState(postData.likes.length);
+  const [comment, setComment] = useState(postData.comments);
   const dispatch = useDispatch();
 
   const changeEventHandler = (e) => {
@@ -29,27 +48,52 @@ const Post = ({ post }) => {
       setText("");
     }
   };
-
   const likeOrDislikeHandler = async () => {
+    if (!user) {
+      toast.error("يرجى تسجيل الدخول أولاً");
+      return;
+    }
+
+    // التحقق من وجود معرف المنشور
+    const postIdentifier = post?._id || post?.id;
+    if (!postIdentifier) {
+      console.error("معرف المنشور غير موجود:", { post });
+      toast.error("خطأ في معرف المنشور");
+      return;
+    }
+
     try {
-      const action = liked ? "dislike" : "like";
-      const res = await axios.get(
-        `https://instaclone-g9h5.onrender.com/api/v1/post/${post._id}/${action}`,
-        { withCredentials: true }
-        
+      const url = `http://localhost:5000/api/posts/${postIdentifier}/like`;
+      console.log("Sending request to:", url);
+
+      const res = await axios.post(
+        url,
+        {},
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          withCredentials: true,
+        }
       );
+
       if (res.data.success) {
-        const updatedLikes = liked ? postLike - 1 : postLike + 1;
-        setPostLike(updatedLikes);
+        // تحديث حالة الإعجاب
         setLiked(!liked);
 
+        // تحديث عدد الإعجابات
+        setPostLike(res.data.likesCount);
+
+        // تحديث المنشورات في Redux store
         const updatedPostData = posts.map((p) =>
-          p._id === post._id
+          p._id === postIdentifier || p.id === postIdentifier
             ? {
                 ...p,
-                likes: liked
-                  ? p.likes.filter((id) => id !== user._id)
-                  : [...p.likes, user._id],
+                likes: res.data.isLiked
+                  ? [...p.likes, user._id]
+                  : p.likes.filter((id) => id !== user._id),
+                likesCount: res.data.likesCount,
               }
             : p
         );
@@ -57,18 +101,54 @@ const Post = ({ post }) => {
         toast.success(res.data.message);
       }
     } catch (error) {
-      console.log(error);
+      console.error("Error details:", {
+        error,
+        postIdentifier,
+        post,
+        postData,
+        url: `http://localhost:5000/api/posts/${postIdentifier}/like`,
+      });
+
+      if (error.response?.status === 401) {
+        toast.error("يرجى تسجيل الدخول أولاً");
+      } else if (error.response?.status === 404) {
+        toast.error("لم يتم العثور على المنشور");
+      } else {
+        toast.error(
+          error.response?.data?.message || "حدث خطأ أثناء إضافة الإعجاب"
+        );
+      }
     }
   };
-
   const commentHandler = async () => {
+    if (!user) {
+      toast.error("يرجى تسجيل الدخول أولاً");
+      return;
+    }
+
+    if (!text.trim()) {
+      toast.error("يرجى إدخال نص التعليق");
+      return;
+    }
+
+    // التحقق من وجود معرف المنشور
+    if (!post?._id || !postData._id) {
+      console.error("معرف المنشور غير موجود:", {
+        postId: post?.id,
+        postDataId: postData._id,
+      });
+      toast.error("خطأ في معرف المنشور");
+      return;
+    }
+
     try {
       const res = await axios.post(
-        `https://instaclone-g9h5.onrender.com/api/v1/post/${post._id}/comment`,
-        { text },
+        `http://localhost:5000/api/posts/${postData._id}/comments`,
+        { content: text },
         {
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
           withCredentials: true,
         }
@@ -76,9 +156,8 @@ const Post = ({ post }) => {
       if (res.data.success) {
         const updatedCommentData = [...comment, res.data.comment];
         setComment(updatedCommentData);
-
         const updatedPostData = posts.map((p) =>
-          p._id === post._id ? { ...p, comments: updatedCommentData } : p
+          p._id === postData._id ? { ...p, comments: updatedCommentData } : p
         );
 
         dispatch(setPosts(updatedPostData));
@@ -87,13 +166,29 @@ const Post = ({ post }) => {
       }
     } catch (error) {
       console.log(error);
+      if (error.response?.status === 401) {
+        toast.error("يرجى تسجيل الدخول أولاً");
+      } else {
+        toast.error(
+          error.response?.data?.error || "حدث خطأ أثناء إضافة التعليق"
+        );
+      }
     }
+  };
+
+  const handleOpenCommentDialog = () => {
+    if (!user) {
+      toast.error("يرجى تسجيل الدخول أولاً");
+      return;
+    }
+    dispatch(setSelectedPost(post));
+    setOpen(true);
   };
 
   const deletePostHandler = async () => {
     try {
       const res = await axios.delete(
-        `https://instaclone-g9h5.onrender.com/api/v1/post/delete/${post?._id}`,
+        `http://localhost:5000/api/posts/${post?.id}`,
         { withCredentials: true }
       );
       if (res.data.success) {
@@ -112,7 +207,7 @@ const Post = ({ post }) => {
   const bookmarkHandler = async () => {
     try {
       const res = await axios.get(
-        `https://instaclone-g9h5.onrender.com/api/v1/post/${post?._id}/bookmark`,
+        `https://localhost:5000/api/posts/${post?.id}/bookmark`,
         { withCredentials: true }
       );
       if (res.data.success) {
@@ -136,7 +231,7 @@ const Post = ({ post }) => {
             <h2 className="font-semibold text-[#1F2937]">
               {post.author?.username}
             </h2>
-            {user?._id === post.author._id && (
+            {user?._id === post.id && (
               <Badge
                 variant="secondary"
                 className="bg-[#F3F4F6] text-[#6B7280]"
@@ -238,11 +333,19 @@ const Post = ({ post }) => {
           {post.caption}
         </p>
 
+        {/* Content */}
+        {post.content && (
+          <p className="text-[#4B5563] mb-3 whitespace-pre-wrap">
+            {post.content}
+          </p>
+        )}
+
         {/* Comments Preview */}
         {comment.length > 0 && (
           <button
             onClick={() => {
               dispatch(setSelectedPost(post));
+
               setOpen(true);
             }}
             className="text-[#6B7280] text-sm hover:text-[#1F2937] transition-colors"
@@ -271,7 +374,7 @@ const Post = ({ post }) => {
         </div>
       </div>
 
-      <CommentDialog open={open} setOpen={setOpen} />
+      <CommentDialog open={open} setOpen={setOpen} post={post} />
     </article>
   );
 };
