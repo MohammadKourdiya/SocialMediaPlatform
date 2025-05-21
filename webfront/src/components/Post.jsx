@@ -341,16 +341,15 @@ const Post = ({ post }) => {
         )}
 
         {/* Comments Preview */}
-        {comment.length > 0 && (
+        {Array.isArray(post.comments) && post.comments.length > 0 && (
           <button
             onClick={() => {
               dispatch(setSelectedPost(post));
-
               setOpen(true);
             }}
             className="text-[#6B7280] text-sm hover:text-[#1F2937] transition-colors"
           >
-            View all {comment.length} comments
+            View all {post.comments.length} comments
           </button>
         )}
 
