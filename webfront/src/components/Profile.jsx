@@ -425,10 +425,44 @@ const PostsGrid = ({ posts = [] }) => {
     );
   }
 
+  // وظيفة جلب تفاصيل المنشور الكاملة عند النقر عليه
+  const fetchPostDetails = async (postId) => {
+    try {
+      const res = await axios.get(`http://localhost:5000/api/posts/${postId}`, {
+        withCredentials: true,
+      });
+      if (res.data.success) {
+        // تسجيل البيانات المستلمة للتشخيص
+        console.log("بيانات المنشور المستلمة:", res.data.data);
+
+        // تحديث المنشور بالبيانات الكاملة بما في ذلك التعليقات
+        const fullPost = res.data.data;
+
+        // تأكد من أن مصفوفة التعليقات موجودة وصالحة
+        if (!fullPost.comments) {
+          fullPost.comments = [];
+        }
+
+        setSelectedPostLocal(fullPost);
+        dispatch(setSelectedPost(fullPost));
+      }
+    } catch (error) {
+      console.error("خطأ في جلب تفاصيل المنشور:", error);
+      toast.error("حدث خطأ أثناء جلب تفاصيل المنشور");
+    }
+  };
+
   const handlePostClick = (post) => {
+    // أولاً نعين المنشور بالبيانات الأولية
     setSelectedPostLocal(post);
     dispatch(setSelectedPost(post));
     setShowPostDialog(true);
+
+    // ثم نقوم بجلب البيانات الكاملة من الخادم
+    const postId = post?._id || post?.id;
+    if (postId) {
+      fetchPostDetails(postId);
+    }
   };
 
   // وظيفة معالجة الإعجاب على المنشور
@@ -597,7 +631,16 @@ const PostsGrid = ({ posts = [] }) => {
 
       {/* نافذة عرض المنشور بالكامل - تصميم محسن */}
       <Dialog open={showPostDialog} onOpenChange={setShowPostDialog}>
-        <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto bg-white border-0 shadow-xl rounded-2xl p-0">
+        <DialogContent
+          className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto bg-white border-0 shadow-xl rounded-2xl p-0"
+          aria-describedby="post-dialog-description"
+        >
+          <DialogHeader className="sr-only">
+            <DialogTitle>Post Details</DialogTitle>
+            <DialogDescription id="post-dialog-description">
+              View and interact with this post
+            </DialogDescription>
+          </DialogHeader>
           <div className="flex flex-col lg:flex-row h-full">
             {/* قسم الصورة - جعلناه على النصف الأيسر في الشاشات الكبيرة */}
             <div className="lg:w-1/2 bg-black flex items-center justify-center">
@@ -612,9 +655,6 @@ const PostsGrid = ({ posts = [] }) => {
             <div className="lg:w-1/2 p-6 flex flex-col max-h-[90vh] lg:max-h-[500px] overflow-y-auto">
               <DialogHeader className="border-b pb-3 mb-4">
                 <div className="flex items-center justify-between">
-                  <DialogTitle className="text-xl font-bold text-gray-800">
-                    عرض المنشور
-                  </DialogTitle>
                   <button
                     className="p-1 rounded-full hover:bg-gray-100"
                     onClick={() => setShowPostDialog(false)}
@@ -689,21 +729,6 @@ const PostsGrid = ({ posts = [] }) => {
                   {/* معلومات التفاعل */}
                   <div className="border-t border-b py-3 my-2">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2">
-                          <FaHeart className="text-red-500" size={18} />
-                          <span className="font-medium text-gray-700">
-                            {selectedPost?.likes?.length || 0} إعجاب
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <MessageCircle size={18} className="text-blue-500" />
-                          <span className="font-medium text-gray-700">
-                            {selectedPost?.comments?.length || 0} تعليق
-                          </span>
-                        </div>
-                      </div>
-
                       <div className="flex gap-2">
                         <Button
                           size="sm"
@@ -739,6 +764,9 @@ const PostsGrid = ({ posts = [] }) => {
 
                   {/* قسم التعليقات */}
                   <div className="flex-grow overflow-y-auto my-3">
+                    {/* تسجيل بيانات التعليقات للتشخيص */}
+                    {console.log("بيانات التعليقات:", selectedPost?.comments)}
+
                     {Array.isArray(selectedPost?.comments) &&
                     selectedPost.comments.length > 0 ? (
                       <div>
@@ -750,10 +778,10 @@ const PostsGrid = ({ posts = [] }) => {
                           </span>
                         </h3>
                         <div className="space-y-3">
-                          {selectedPost.comments.map((comment) => (
+                          {selectedPost.comments.map((comment, index) => (
                             <div
-                              key={comment?._id || comment?.id}
-                              className="p-3 bg-gray-50 rounded-xl flex items-start gap-3 hover:bg-gray-100 transition-colors"
+                              key={comment?._id || comment?.id || index}
+                              className="p-3 bg-gray-50 rounded-xl flex items-start gap-3 hover:bg-gray-50 transition-colors"
                             >
                               <Avatar className="h-8 w-8 border-2 border-white shadow-sm flex-shrink-0">
                                 <AvatarImage
@@ -761,14 +789,16 @@ const PostsGrid = ({ posts = [] }) => {
                                 />
                                 <AvatarFallback className="bg-gray-200 text-gray-700 text-xs">
                                   {comment?.author?.username
-                                    ?.substring(0, 2)
-                                    ?.toUpperCase()}
+                                    ? comment.author.username
+                                        .substring(0, 2)
+                                        .toUpperCase()
+                                    : "UN"}
                                 </AvatarFallback>
                               </Avatar>
                               <div className="flex-1 min-w-0">
                                 <div className="flex justify-between items-center mb-1">
                                   <span className="font-semibold text-sm text-gray-800 hover:underline cursor-pointer">
-                                    {comment?.author?.username}
+                                    {user?.username || "مستخدم"}
                                   </span>
                                   {comment?.createdAt && (
                                     <span className="text-xs text-gray-500 whitespace-nowrap">
@@ -778,8 +808,8 @@ const PostsGrid = ({ posts = [] }) => {
                                     </span>
                                   )}
                                 </div>
-                                <p className="text-sm text-gray-700 break-words">
-                                  {comment?.text}
+                                <p className="text-sm text-black break-words">
+                                  {comment?.text || comment?.content || ""}
                                 </p>
                               </div>
                             </div>
