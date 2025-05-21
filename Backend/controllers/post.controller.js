@@ -1,7 +1,7 @@
 const sharp = require("sharp");
 const cloudinary = require("../utils/cloudinary.js");
 const { Post } = require("../models/post.model.js");
-const { User } = require("../models/user.model.js");
+const User = require("../models/user.model.js");
 const { Comment } = require("../models/comment.model.js");
 const { getReceiverSocketId, io } = require("../socket/socket.js");
 const { getProfile } = require("./user.controller.js");
@@ -182,25 +182,35 @@ const likePost = async (req, res) => {
 const addComment = async (req, res) => {
   try {
     const postId = req.params.id;
-    const commentKrneWalaUserKiId = req.id;
-
+    const commentKrneWalaUserKiId =
+      req.user && req.user._id ? req.user._id : req.id;
     const { text } = req.body;
 
-    const post = await Post.findById(postId);
+    // سجل القيم المرسلة لتسهيل تتبع الأخطاء
+    console.log({ postId, commentKrneWalaUserKiId, text });
 
     if (!text)
       return res
         .status(400)
         .json({ message: "text is required", success: false });
 
+    const post = await Post.findById(postId);
+
+    if (!post) {
+      console.log("Post not found:", postId);
+      return res
+        .status(404)
+        .json({ message: "Post not found", success: false });
+    }
+
     const comment = await Comment.create({
-      text,
-      author: commentKrneWalaUserKiId,
+      content: text,
+      user: commentKrneWalaUserKiId,
       post: postId,
     });
 
     await comment.populate({
-      path: "author",
+      path: "user",
       select: "username profilePicture",
     });
 
@@ -213,7 +223,7 @@ const addComment = async (req, res) => {
       success: true,
     });
   } catch (error) {
-    console.log(error);
+    console.log("Error in addComment:", error);
     return res.status(500).json({ message: "Server error", success: false });
   }
 };

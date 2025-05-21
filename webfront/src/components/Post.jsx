@@ -144,7 +144,7 @@ const Post = ({ post }) => {
     try {
       const res = await axios.post(
         `http://localhost:5000/api/posts/${postData._id}/comments`,
-        { content: text },
+        { text },
         {
           headers: {
             "Content-Type": "application/json",

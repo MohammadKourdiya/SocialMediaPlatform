@@ -7,6 +7,7 @@ const authSlice = createSlice({
         suggestedUsers:[],
         userProfile:null,
         selectedUser:null,
+        token: localStorage.getItem('token') || null,
     },
     reducers:{
         // actions

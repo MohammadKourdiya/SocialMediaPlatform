@@ -7,7 +7,7 @@ const config = {
   port: 5000,
   nodeEnv: "development",
   jwt: {
-    secret: process.env.JWT_SECRET,
+    secret: process.env.JWT_SECRET || "your_jwt_secret_key_here",
     expiresIn: "7d",
   },
   cors: {
@@ -18,5 +18,11 @@ const config = {
   },
   serverUrl: "http://localhost:5000",
 };
+
+// طباعة إعدادات JWT للتشخيص
+console.log("إعدادات JWT:", {
+  secret: config.jwt.secret ? "تم تعيين السر" : "لم يتم تعيين السر",
+  expiresIn: config.jwt.expiresIn,
+});
 
 module.exports = config;

@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+  DialogTitle,
+  DialogDescription,
+} from "./ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Link } from "react-router-dom";
 import { MoreHorizontal } from "lucide-react";
@@ -45,7 +51,7 @@ const CommentDialog = ({ open, setOpen, post }) => {
     try {
       const res = await axios.post(
         `http://localhost:5000/api/posts/${post.id}/comments`,
-        { content: text },
+        { text },
         {
           headers: {
             "Content-Type": "application/json",
@@ -84,6 +90,10 @@ const CommentDialog = ({ open, setOpen, post }) => {
         onInteractOutside={() => setOpen(false)}
         className="max-w-5xl p-0 flex flex-col"
       >
+        <DialogTitle>التعليقات</DialogTitle>
+        <DialogDescription>
+          يمكنك قراءة التعليقات أو إضافة تعليق جديد على هذا المنشور.
+        </DialogDescription>
         <div className="flex flex-1">
           <div className="w-1/2">
             <img
@@ -123,7 +133,7 @@ const CommentDialog = ({ open, setOpen, post }) => {
             <hr />
             <div className="flex-1 overflow-y-auto max-h-96 p-4">
               {comment.map((comment) => (
-                <Comment key={comment._id} comment={comment} />
+                <Comment key={comment._id || comment.id} comment={comment} />
               ))}
             </div>
             <div className="p-4">

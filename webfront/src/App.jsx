@@ -1,6 +1,11 @@
 import React from "react";
 import { useSelector } from "react-redux";
-import { RouterProvider, createBrowserRouter } from "react-router-dom";
+import {
+  RouterProvider,
+  createBrowserRouter,
+  Routes,
+  Route,
+} from "react-router-dom";
 
 import Home from "./components/Home";
 import Login from "./components/Login";
@@ -9,6 +14,7 @@ import Signup from "./components/Signup";
 import ProtectedRoutes from "./components/ProtectedRoutes";
 import MainLayout from "./components/MainLayout";
 import SocketProvider from "./context/SocketProvider.jsx";
+import SearchUsers from "./components/SearchUsers";
 
 const browserRouter = createBrowserRouter([
   {
@@ -53,10 +59,18 @@ const browserRouter = createBrowserRouter([
     path: "/signup",
     element: <Signup />,
   },
+  {
+    path: "/search",
+    element: <SearchUsers />,
+  },
 ]);
 
 function App() {
   const { user } = useSelector((store) => store.auth);
+
+
+
+  
 
   return (
     <SocketProvider user={user}>

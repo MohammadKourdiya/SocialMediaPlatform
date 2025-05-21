@@ -6,6 +6,44 @@ const upload = require("../middlewares/multer");
 
 /**
  * @swagger
+ * /api/users/search:
+ *   get:
+ *     summary: Search for users by username, first name, or last name
+ *     description: Search for users using a query string
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: query
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Search term
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved matching users
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */
+
+
+/**
+ * @swagger
  * components:
  *   schemas:
  *     User:
@@ -187,5 +225,37 @@ router.put(
 );
 router.put("/change-password", protect, userController.changePassword);
 router.get("/search", protect, userController.searchUsers);
+
+/**
+ * @swagger
+ * /api/users/search:
+ *   get:
+ *     summary: البحث عن المستخدمين
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: query
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: نص البحث
+ *     responses:
+ *       200:
+ *         description: تم العثور على المستخدمين بنجاح
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/User'
+ */
+
 
 module.exports = router;

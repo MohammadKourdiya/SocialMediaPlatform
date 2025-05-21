@@ -10,17 +10,29 @@ const config = require("../config");
  * @returns {string} - توكن JWT
  */
 const generateToken = (user) => {
-  return jwt.sign(
-    {
-      id: user._id,
-      username: user.username,
-      email: user.email,
-    },
-    config.jwt.secret,
-    {
-      expiresIn: config.jwt.expiresIn,
-    }
-  );
+  console.log("إنشاء توكن للمستخدم:", user);
+
+  if (!user) {
+    throw new Error("بيانات المستخدم غير صالحة");
+  }
+
+  // التحقق من وجود معرف المستخدم
+  const userId = user._id || user.id;
+  if (!userId) {
+    throw new Error("معرف المستخدم غير موجود");
+  }
+
+  const payload = {
+    id: userId.toString(),
+    username: user.username,
+    email: user.email,
+  };
+
+  console.log("بيانات التوكن:", payload);
+
+  return jwt.sign(payload, config.jwt.secret, {
+    expiresIn: config.jwt.expiresIn,
+  });
 };
 
 module.exports = {

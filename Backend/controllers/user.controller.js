@@ -1,6 +1,6 @@
-const { User } = require("../models/user.model");
-const { generateToken } = require("../utils/jwt");
-const { uploadToCloudinary } = require("../utils/cloudinary");
+const User = require("../models/user.model.js");
+const { generateToken } = require("../utils/jwt.js");
+const { uploadToCloudinary } = require("../utils/cloudinary.js");
 
 // تسجيل مستخدم جديد
 const register = async (req, res) => {
@@ -238,25 +238,64 @@ const changePassword = async (req, res) => {
   }
 };
 
-// البحث عن مستخدمين
+// البحث عن المستخدمين
 const searchUsers = async (req, res) => {
   try {
+    console.log("🔍 البحث عن مستخدمين:", req.query);
     const { query } = req.query;
-    const users = await User.find({
-      $or: [
-        { username: { $regex: query, $options: "i" } },
-        { email: { $regex: query, $options: "i" } },
-      ],
-    }).select("username email profilePicture");
 
-    res.status(200).json({
+    // التحقق من وجود استعلام
+    if (!query || query.trim() === "") {
+      return res.status(400).json({
+        success: false,
+        message: "يرجى تقديم استعلام للبحث",
+      });
+    }
+
+    // التحقق من توكن المستخدم
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: "يرجى تسجيل الدخول للوصول إلى هذه الخدمة",
+      });
+    }
+
+    // بناء شروط البحث
+    const searchQuery = {
+      username: { $regex: query, $options: "i" },
+    };
+
+    // استثناء المستخدم الحالي
+    if (req.user._id) {
+      searchQuery._id = { $ne: req.user._id };
+    }
+
+    console.log("شروط البحث:", searchQuery);
+
+    // البحث عن المستخدمين
+    const users = await User.find(searchQuery)
+      .select("username email profilePicture bio firstName lastName")
+      .limit(10);
+
+    console.log(`تم العثور على ${users.length} مستخدم`);
+
+    return res.status(200).json({
       success: true,
+      count: users.length,
       data: users,
     });
   } catch (error) {
+    console.error("خطأ في البحث عن المستخدمين:", {
+      message: error.message,
+      stack: error.stack,
+      user: req.user,
+      query: req.query.query,
+    });
+
     res.status(500).json({
       success: false,
-      error: error.message,
+      message: "حدث خطأ أثناء البحث عن المستخدمين",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
     });
   }
 };
