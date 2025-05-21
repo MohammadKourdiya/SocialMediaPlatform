@@ -109,14 +109,14 @@ const login = async (req, res) => {
   }
 };
 
-// الحصول على الملف الشخصي
+// الحصول على الملف الشخصي بواسطة اسم المستخدم
 const getProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
+    const user = await User.findOne({ username: req.params.username });
     if (!user) {
       return res.status(404).json({
         success: false,
-        error: "the user not found",
+        error: "User not found",
       });
     }
 
@@ -136,7 +136,7 @@ const getProfile = async (req, res) => {
 const updateProfile = async (req, res) => {
   try {
     const { username, email, bio } = req.body;
-    const user = await User.findById(req.user._id);
+    const user = await User.findByIdAndUpdate(req.user._id);
 
     if (!user) {
       return res.status(404).json({

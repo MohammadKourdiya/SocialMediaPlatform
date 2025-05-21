@@ -13,7 +13,7 @@ const RightSidebar = () => {
       <div className="bg-white rounded-xl shadow-sm border border-[#E5E7EB] p-4 mb-6">
         <div className="flex items-center gap-3">
           <Link
-            to={`/profile/${user?._id}`}
+            to={`/profile/${user?.username}`}
             className="hover:opacity-90 transition-opacity"
           >
             <Avatar className="w-14 h-14">
@@ -23,7 +23,7 @@ const RightSidebar = () => {
           </Link>
           <div className="flex-1 min-w-0">
             <Link
-              to={`/profile/${user?._id}`}
+              to={`/profile/${user?.username}`}
               className="block font-semibold text-[#1F2937] hover:text-[#3B82F6] transition-colors truncate"
             >
               {user?.username}

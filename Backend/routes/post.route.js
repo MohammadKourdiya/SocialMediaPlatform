@@ -277,4 +277,6 @@ router.post("/:id/like", protect, postController.likePost);
 router.post("/:id/comments", protect, postController.addComment);
 router.get("/:id/comments", postController.getCommentsOfPost);
 
+router.get("/user/:userId", postController.getUserPostById);
+
 module.exports = router;

@@ -15,6 +15,7 @@ import ProtectedRoutes from "./components/ProtectedRoutes";
 import MainLayout from "./components/MainLayout";
 import SocketProvider from "./context/SocketProvider.jsx";
 import SearchUsers from "./components/SearchUsers";
+import EditProfile from "./components/EditProfile";
 
 const browserRouter = createBrowserRouter([
   {
@@ -49,6 +50,14 @@ const browserRouter = createBrowserRouter([
           </ProtectedRoutes>
         ),
       },
+      {
+        path: "/account/edit",
+        element: (
+          <ProtectedRoutes>
+            <EditProfile />
+          </ProtectedRoutes>
+        ),
+      },
     ],
   },
   {
@@ -67,10 +76,6 @@ const browserRouter = createBrowserRouter([
 
 function App() {
   const { user } = useSelector((store) => store.auth);
-
-
-
-  
 
   return (
     <SocketProvider user={user}>

@@ -98,6 +98,34 @@ const getUserPost = async (req, res) => {
     return res.status(500).json({ message: "Server error", success: false });
   }
 };
+const getUserPostById = async (req, res) => {
+  try {
+    const authorId = req.params.userId;
+    
+    const posts = await Post.find({ author: authorId })
+      .sort({ createdAt: -1 })
+      .populate({
+        path: "author",
+        select: "username profilePicture",
+      })
+      .populate({
+        path: "comments",
+        sort: { createdAt: -1 },
+        populate: {
+          path: "user",
+          select: "username profilePicture",
+        },
+      });
+    return res.status(200).json({
+      success: true,
+      data: { posts },
+    });
+    
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Server error", success: false });
+  }
+};
 const likePost = async (req, res) => {
   try {
     const likeKrneWalaUserKiId = req.user;
@@ -324,6 +352,7 @@ module.exports = {
   addNewPost,
   getAllPost,
   getUserPost,
+  getUserPostById,
   likePost,
   addComment,
   getCommentsOfPost,
