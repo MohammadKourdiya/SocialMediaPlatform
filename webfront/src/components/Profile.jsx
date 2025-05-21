@@ -428,40 +428,62 @@ const PostsGrid = ({ posts = [] }) => {
   // وظيفة جلب تفاصيل المنشور الكاملة عند النقر عليه
   const fetchPostDetails = async (postId) => {
     try {
-      const res = await axios.get(`http://localhost:5000/api/posts/${postId}`, {
-        withCredentials: true,
-      });
-      if (res.data.success) {
-        // تسجيل البيانات المستلمة للتشخيص
-        console.log("بيانات المنشور المستلمة:", res.data.data);
+      // تأكد من أن لدينا تفاصيل المنشور من البداية
+      if (!selectedPost) return;
 
-        // تحديث المنشور بالبيانات الكاملة بما في ذلك التعليقات
-        const fullPost = res.data.data;
+      try {
+        // محاولة جلب التعليقات للمنشور
+        const res = await axios.get(
+          `http://localhost:5000/api/posts/${postId}/comments`,
+          {
+            withCredentials: true,
+          }
+        );
 
-        // تأكد من أن مصفوفة التعليقات موجودة وصالحة
-        if (!fullPost.comments) {
-          fullPost.comments = [];
+        if (res.data && res.data.success) {
+          console.log("تعليقات المنشور المستلمة:", res.data.comments);
+
+          // تحديث المنشور الحالي بالتعليقات التي تم جلبها
+          const updatedPost = {
+            ...selectedPost,
+            comments: res.data.comments || [],
+          };
+
+          setSelectedPostLocal(updatedPost);
+          dispatch(setSelectedPost(updatedPost));
         }
-
-        setSelectedPostLocal(fullPost);
-        dispatch(setSelectedPost(fullPost));
+      } catch (error) {
+        console.error("خطأ في جلب تعليقات المنشور:", error);
+        // في حالة فشل جلب التعليقات، نستخدم التعليقات الموجودة في المنشور أو نضع مصفوفة فارغة
+        const updatedPost = {
+          ...selectedPost,
+          comments: selectedPost.comments || [],
+        };
+        setSelectedPostLocal(updatedPost);
       }
     } catch (error) {
-      console.error("خطأ في جلب تفاصيل المنشور:", error);
-      toast.error("حدث خطأ أثناء جلب تفاصيل المنشور");
+      console.error("خطأ عام في معالجة المنشور:", error);
     }
   };
-
   const handlePostClick = (post) => {
+    if (!post) return;
+
     // أولاً نعين المنشور بالبيانات الأولية
     setSelectedPostLocal(post);
     dispatch(setSelectedPost(post));
     setShowPostDialog(true);
 
-    // ثم نقوم بجلب البيانات الكاملة من الخادم
+    // نتأكد من وجود بيانات المنشور الأساسية
+    if (!post.comments) {
+      post.comments = [];
+    }
+
+    // ثم نقوم بجلب التعليقات من الخادم
     const postId = post?._id || post?.id;
     if (postId) {
       fetchPostDetails(postId);
+    } else {
+      console.warn("لا يوجد معرف للمنشور، لا يمكن جلب التعليقات");
     }
   };
 
@@ -551,25 +573,36 @@ const PostsGrid = ({ posts = [] }) => {
       );
 
       if (res.data.success) {
+        console.log("تم إضافة تعليق جديد:", res.data);
+
+        // تنسيق التعليق الجديد ليتناسب مع هيكل البيانات المتوقع
+        const newComment = {
+          _id: res.data.comment?._id || `temp-${Date.now()}`,
+          text: commentText,
+          content: commentText,
+          createdAt: new Date().toISOString(),
+          user: {
+            _id: user?._id,
+            username: user?.username,
+            profilePicture: user?.profilePicture,
+          },
+        };
+
         // تحديث حالة المنشور المحدد مع التعليق الجديد
-        const newComment = res.data.comment;
         const updatedPost = {
           ...selectedPost,
           comments: [...(selectedPost.comments || []), newComment],
         };
+
         setSelectedPostLocal(updatedPost);
-
-        // تحديث حالة المنشورات في القائمة
-        const updatedPosts = posts.map((p) =>
-          p._id === postId || p.id === postId ? updatedPost : p
-        );
-
-        // تحديث الريدكس
-        dispatch(setPosts(updatedPosts));
+        dispatch(setSelectedPost(updatedPost));
 
         // إعادة تعيين حقل التعليق
         setCommentText("");
         toast.success("تمت إضافة التعليق بنجاح");
+
+        // جلب التعليقات مرة أخرى للتأكد من التحديث
+        fetchPostDetails(postId);
       }
     } catch (error) {
       console.error("خطأ في إضافة التعليق:", error);
@@ -764,9 +797,6 @@ const PostsGrid = ({ posts = [] }) => {
 
                   {/* قسم التعليقات */}
                   <div className="flex-grow overflow-y-auto my-3">
-                    {/* تسجيل بيانات التعليقات للتشخيص */}
-                    {console.log("بيانات التعليقات:", selectedPost?.comments)}
-
                     {Array.isArray(selectedPost?.comments) &&
                     selectedPost.comments.length > 0 ? (
                       <div>
@@ -780,16 +810,20 @@ const PostsGrid = ({ posts = [] }) => {
                         <div className="space-y-3">
                           {selectedPost.comments.map((comment, index) => (
                             <div
-                              key={comment?._id || comment?.id || index}
+                              key={
+                                comment?._id ||
+                                comment?.id ||
+                                `comment-${index}`
+                              }
                               className="p-3 bg-gray-50 rounded-xl flex items-start gap-3 hover:bg-gray-50 transition-colors"
                             >
                               <Avatar className="h-8 w-8 border-2 border-white shadow-sm flex-shrink-0">
                                 <AvatarImage
-                                  src={comment?.author?.profilePicture}
+                                  src={comment?.user?.profilePicture}
                                 />
                                 <AvatarFallback className="bg-gray-200 text-gray-700 text-xs">
-                                  {comment?.author?.username
-                                    ? comment.author.username
+                                  {comment?.user?.username
+                                    ? comment.user.username
                                         .substring(0, 2)
                                         .toUpperCase()
                                     : "UN"}
@@ -798,7 +832,7 @@ const PostsGrid = ({ posts = [] }) => {
                               <div className="flex-1 min-w-0">
                                 <div className="flex justify-between items-center mb-1">
                                   <span className="font-semibold text-sm text-gray-800 hover:underline cursor-pointer">
-                                    {user?.username || "مستخدم"}
+                                    {comment?.user?.username || "مستخدم"}
                                   </span>
                                   {comment?.createdAt && (
                                     <span className="text-xs text-gray-500 whitespace-nowrap">

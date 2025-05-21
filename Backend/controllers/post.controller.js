@@ -101,7 +101,7 @@ const getUserPost = async (req, res) => {
 const getUserPostById = async (req, res) => {
   try {
     const authorId = req.params.userId;
-    
+
     const posts = await Post.find({ author: authorId })
       .sort({ createdAt: -1 })
       .populate({
@@ -120,7 +120,6 @@ const getUserPostById = async (req, res) => {
       success: true,
       data: { posts },
     });
-    
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Server error", success: false });
@@ -245,9 +244,19 @@ const addComment = async (req, res) => {
     post.comments.push(comment._id);
     await post.save();
 
+    // تجهيز البيانات بالتنسيق المتوقع من الواجهة الأمامية
+    const formattedComment = {
+      _id: comment._id,
+      text: comment.content, // إضافة حقل text لتوافق واجهة المستخدم
+      content: comment.content,
+      user: comment.user,
+      createdAt: comment.createdAt,
+      updatedAt: comment.updatedAt,
+    };
+
     return res.status(201).json({
       message: "Comment Added",
-      comment,
+      comment: formattedComment,
       success: true,
     });
   } catch (error) {
@@ -262,17 +271,22 @@ const getCommentsOfPost = async (req, res) => {
 
     // جلب التعليقات المرتبطة بالـ postId
     const comments = await Comment.find({ post: postId }).populate(
-      "author",
+      "user",
       "username profilePicture"
     );
 
-    // التحقق إذا كانت المصفوفة فارغة
-    if (comments.length === 0)
-      return res
-        .status(404)
-        .json({ message: "No comments found for this post", success: false });
+    // تحويل البيانات لتتناسب مع الواجهة الأمامية
+    const formattedComments = comments.map((comment) => ({
+      _id: comment._id,
+      text: comment.content, // إضافة حقل text لتوافق واجهة المستخدم
+      content: comment.content,
+      user: comment.user,
+      createdAt: comment.createdAt,
+      updatedAt: comment.updatedAt,
+    }));
 
-    return res.status(200).json({ success: true, comments });
+    // حتى لو كانت المصفوفة فارغة نعيد مصفوفة فارغة
+    return res.status(200).json({ success: true, comments: formattedComments });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Server Error", success: false });
