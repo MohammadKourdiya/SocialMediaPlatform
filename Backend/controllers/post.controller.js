@@ -59,7 +59,7 @@ const getAllPost = async (req, res) => {
         path: "comments",
         sort: { createdAt: -1 },
         populate: {
-          path: "author",
+          path: "user",
           select: "username profilePicture",
         },
       });
@@ -85,7 +85,7 @@ const getUserPost = async (req, res) => {
         path: "comments",
         sort: { createdAt: -1 },
         populate: {
-          path: "author",
+          path: "user",
           select: "username, profilePicture",
         },
       });

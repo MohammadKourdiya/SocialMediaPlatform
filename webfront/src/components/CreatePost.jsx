@@ -66,32 +66,39 @@ const CreatePost = ({ open, setOpen }) => {
 
   return (
     <Dialog open={open}>
-      <DialogContent onInteractOutside={() => setOpen(false)}>
-        <DialogHeader className="text-center font-semibold">
-          Create New Post
+      <DialogContent
+        onInteractOutside={() => setOpen(false)}
+        className="max-w-lg bg-[#f8fafc] rounded-2xl shadow-xl p-6 flex flex-col gap-4"
+      >
+        <DialogHeader className="text-center font-bold text-2xl text-transparent bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text mb-2">
+          إنشاء منشور جديد
         </DialogHeader>
-        <div className="flex gap-3 items-center">
+        <div className="flex gap-3 items-center mb-2">
           <Avatar>
             <AvatarImage src={user?.profilePicture} alt="img" />
             <AvatarFallback>CN</AvatarFallback>
           </Avatar>
           <div>
-            <h1 className="font-semibold text-xs">{user?.username}</h1>
-            <span className="text-gray-600 text-xs">Bio here...</span>
+            <h1 className="font-semibold text-xs text-[#1F2937]">
+              {user?.username}
+            </h1>
+            <span className="text-gray-500 text-xs">
+              {user?.bio || "شارك لحظتك..."}
+            </span>
           </div>
         </div>
         <Textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          className="focus-visible:ring-transparent border-none"
-          placeholder="Write a caption..."
+          className="focus-visible:ring-blue-400 border border-gray-200 bg-white text-[#1F2937] placeholder-[#94a3b8] rounded-lg min-h-[80px]"
+          placeholder="اكتب وصف المنشور..."
         />
         {imagePreview && (
-          <div className="w-full h-64 flex items-center justify-center">
+          <div className="w-full h-64 flex items-center justify-center bg-[#e0e7ef] rounded-lg overflow-hidden mb-2 border border-gray-200">
             <img
               src={imagePreview}
               alt="preview_img"
-              className="object-cover h-full w-full rounded-md"
+              className="object-cover h-full w-full"
             />
           </div>
         )}
@@ -103,23 +110,23 @@ const CreatePost = ({ open, setOpen }) => {
         />
         <Button
           onClick={() => imageRef.current.click()}
-          className="w-fit mx-auto bg-[#0095F6] hover:bg-[#258bcf] "
+          className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-2 rounded-lg hover:opacity-90 transition-all mb-2"
         >
-          Select from computer
+          اختر صورة من جهازك
         </Button>
         {imagePreview &&
           (loading ? (
-            <Button>
+            <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-2 rounded-lg hover:opacity-90 transition-all">
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Please wait
+              يرجى الانتظار
             </Button>
           ) : (
             <Button
               onClick={createPostHandler}
               type="submit"
-              className="w-full"
+              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-2 rounded-lg hover:opacity-90 transition-all"
             >
-              Post
+              نشر
             </Button>
           ))}
       </DialogContent>

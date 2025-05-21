@@ -86,7 +86,7 @@ const Login = () => {
                 name="email"
                 value={input.email}
                 onChange={changeEventHandler}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-200 bg-[#f8fafc] text-[#1F2937] placeholder-[#94a3b8]"
                 placeholder="أدخل بريدك الإلكتروني"
               />
             </div>
@@ -100,7 +100,7 @@ const Login = () => {
                 name="password"
                 value={input.password}
                 onChange={changeEventHandler}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-200 bg-[#f8fafc] text-[#1F2937] placeholder-[#94a3b8]"
                 placeholder="أدخل كلمة المرور"
               />
             </div>

@@ -231,14 +231,15 @@ const Post = ({ post }) => {
             <h2 className="font-semibold text-[#1F2937]">
               {post.author?.username}
             </h2>
-            {user?._id === post.id && (
-              <Badge
-                variant="secondary"
-                className="bg-[#F3F4F6] text-[#6B7280]"
-              >
-                Author
-              </Badge>
-            )}
+            {user?._id === post._id ||
+              (user?.id === post?.id && (
+                <Badge
+                  variant="secondary"
+                  className="bg-[#F3F4F6] text-[#6B7280]"
+                >
+                  Author
+                </Badge>
+              ))}
           </div>
         </div>
         <Dialog>
@@ -342,15 +343,28 @@ const Post = ({ post }) => {
 
         {/* Comments Preview */}
         {Array.isArray(post.comments) && post.comments.length > 0 && (
-          <button
-            onClick={() => {
-              dispatch(setSelectedPost(post));
-              setOpen(true);
-            }}
-            className="text-[#6B7280] text-sm hover:text-[#1F2937] transition-colors"
-          >
-            View all {post.comments.length} comments
-          </button>
+          <div className="space-y-1 mb-2">
+            {post.comments.slice(-2).map((comment) => (
+              <div
+                key={comment._id || comment.id}
+                className="text-sm text-[#4B5563]"
+              >
+                <span className="font-semibold mr-1">
+                  {comment.user?.username || "مستخدم"}:
+                </span>
+                {comment.content}
+              </div>
+            ))}
+            <button
+              onClick={() => {
+                dispatch(setSelectedPost(post));
+                setOpen(true);
+              }}
+              className="text-[#6B7280] text-xs hover:text-[#1F2937] transition-colors mt-1"
+            >
+              عرض كل التعليقات ({post.comments.length})
+            </button>
+          </div>
         )}
 
         {/* Comment Input */}

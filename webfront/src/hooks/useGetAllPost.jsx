@@ -17,8 +17,8 @@ const useGetAllPost = () => {
         if (res.data.success && Array.isArray(res.data.posts)) {
           const postsWithDefaults = res.data.posts.map((post) => ({
             ...post,
-            likes: post.likes || [],
-            comments: post.comments || [],
+            likes: Array.isArray(post.likes) ? [...post.likes] : [],
+            comments: Array.isArray(post.comments) ? [...post.comments] : [],
             content: post.content || "",
           }));
           dispatch(setPosts(postsWithDefaults));

@@ -89,7 +89,7 @@ const Signup = () => {
                 name="username"
                 value={input.username}
                 onChange={changeEventHandler}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-200 bg-[#f8fafc] text-[#1F2937] placeholder-[#94a3b8]"
                 placeholder="أدخل اسم المستخدم"
                 required
               />
@@ -104,7 +104,7 @@ const Signup = () => {
                 name="email"
                 value={input.email}
                 onChange={changeEventHandler}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-200 bg-[#f8fafc] text-[#1F2937] placeholder-[#94a3b8]"
                 placeholder="أدخل بريدك الإلكتروني"
                 required
               />
@@ -119,7 +119,7 @@ const Signup = () => {
                 name="password"
                 value={input.password}
                 onChange={changeEventHandler}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-200 bg-[#f8fafc] text-[#1F2937] placeholder-[#94a3b8]"
                 placeholder="أدخل كلمة المرور"
                 required
               />
@@ -134,7 +134,7 @@ const Signup = () => {
                 name="confirmPassword"
                 value={input.confirmPassword}
                 onChange={changeEventHandler}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-200 bg-[#f8fafc] text-[#1F2937] placeholder-[#94a3b8]"
                 placeholder="أعد إدخال كلمة المرور"
                 required
               />
