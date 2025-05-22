@@ -1,5 +1,5 @@
 const sharp = require("sharp");
-const cloudinary = require("../utils/cloudinary.js");
+const { cloudinary } = require("../utils/cloudinary.js");
 const { Post } = require("../models/post.model.js");
 const User = require("../models/user.model.js");
 const { Comment } = require("../models/comment.model.js");
@@ -18,13 +18,24 @@ const addNewPost = async (req, res) => {
 
     if (!file) return res.status(400).json({ message: "File required" });
 
-    const fileUri = `data:${file.mimetype};base64,${file.buffer.toString(
-      "base64"
-    )}`;
+    let cloudResponse;
 
-    const cloudResponse = await cloudinary.uploader.upload(fileUri, {
-      resource_type: "auto",
-    });
+    // تحقق من نوع الملف المستلم (ملف فعلي أو buffer)
+    if (file.buffer) {
+      // إذا كان الملف في شكل buffer، قم بتحويله إلى base64 ورفعه
+      const fileUri = `data:${file.mimetype};base64,${file.buffer.toString(
+        "base64"
+      )}`;
+      cloudResponse = await cloudinary.uploader.upload(fileUri, {
+        resource_type: "auto",
+      });
+    } else if (file.path) {
+      // إذا كان الملف تم تخزينه على القرص، استخدم دالة uploadToCloudinary
+      const { uploadToCloudinary } = require("../utils/cloudinary.js");
+      cloudResponse = await uploadToCloudinary(file.path);
+    } else {
+      return res.status(400).json({ message: "Invalid file format" });
+    }
 
     const post = await Post.create({
       content,

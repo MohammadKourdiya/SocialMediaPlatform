@@ -123,7 +123,17 @@ const EditProfile = () => {
         <div className="flex flex-col items-center gap-4">
           <div className="relative group">
             <Avatar className="w-32 h-32 border-4 border-blue-200 dark:border-blue-700 shadow-md">
-              <AvatarImage src={user?.profilePicture} alt="profile_image" />
+              <AvatarImage
+                src={
+                  user?.profilePicture ||
+                  "https://media.istockphoto.com/id/1337144146/vector/default-avatar-profile-icon-vector.jpg?s=612x612&w=0&k=20&c=BIbFwuv7FxTWvh5S3vB6bkT0Qv8Vn8N5Ffseq84ClGI="
+                }
+                alt="profile_image"
+                onError={(e) => {
+                  e.target.src =
+                    "https://media.istockphoto.com/id/1337144146/vector/default-avatar-profile-icon-vector.jpg?s=612x612&w=0&k=20&c=BIbFwuv7FxTWvh5S3vB6bkT0Qv8Vn8N5Ffseq84ClGI=";
+                }}
+              />
               <AvatarFallback className="text-3xl">
                 {user?.username?.slice(0, 2).toUpperCase()}
               </AvatarFallback>

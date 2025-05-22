@@ -29,9 +29,20 @@ const Comment = ({ comment }) => {
 
   return (
     <View style={styles.container}>
-      {/* التعليق الرئيسي */}
+      {/* التعليق الرئيسي */}{" "}
       <View style={styles.commentContainer}>
-        <Image source={{ uri: comment.userAvatar }} style={styles.avatar} />
+        <Image
+          source={{
+            uri:
+              comment.userAvatar ||
+              "https://media.istockphoto.com/id/1337144146/vector/default-avatar-profile-icon-vector.jpg?s=612x612&w=0&k=20&c=BIbFwuv7FxTWvh5S3vB6bkT0Qv8Vn8N5Ffseq84ClGI=",
+          }}
+          style={styles.avatar}
+          onError={(e) => {
+            e.nativeEvent.source.uri =
+              "https://media.istockphoto.com/id/1337144146/vector/default-avatar-profile-icon-vector.jpg?s=612x612&w=0&k=20&c=BIbFwuv7FxTWvh5S3vB6bkT0Qv8Vn8N5Ffseq84ClGI=";
+          }}
+        />
         <View style={styles.commentContent}>
           <View style={styles.commentHeader}>
             <Text style={styles.username}>{comment.username}</Text>
@@ -57,7 +68,6 @@ const Comment = ({ comment }) => {
           </View>
         </View>
       </View>
-
       {/* حقل إدخال الرد */}
       {showReplyInput && (
         <View style={styles.replyInputContainer}>
@@ -73,7 +83,6 @@ const Comment = ({ comment }) => {
           </TouchableOpacity>
         </View>
       )}
-
       {/* عرض الردود */}
       {comment.replies && comment.replies.length > 0 && (
         <TouchableOpacity
@@ -87,7 +96,6 @@ const Comment = ({ comment }) => {
           </Text>
         </TouchableOpacity>
       )}
-
       {/* قائمة الردود */}
       {showReplies && comment.replies && (
         <View style={styles.repliesContainer}>

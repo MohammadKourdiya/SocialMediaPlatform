@@ -14,6 +14,7 @@ const swaggerUi = require("swagger-ui-express");
 const config = require("./config");
 const logger = require("./middlewares/logger");
 const { errorHandler } = require("./middlewares/error");
+const path = require("path");
 
 // Rotaları içe aktar
 const messageRoutes = require("./routes/message.route");
@@ -50,6 +51,9 @@ const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 دقيقة
   max: 100, // حد 100 طلب لكل IP
 });
+
+// إضافة دعم الملفات الثابتة
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.use(limiter);
 

@@ -198,9 +198,16 @@ const Profile = () => {
           <div className="flex-shrink-0 flex flex-col items-center justify-center relative -mt-28 md:-mt-36">
             <Avatar className="h-36 w-36 sm:h-44 sm:w-44 border-4 border-white shadow-xl rounded-full">
               <AvatarImage
-                src={userProfile?.profilePicture}
+                src={
+                  userProfile?.profilePicture ||
+                  "https://media.istockphoto.com/id/1337144146/vector/default-avatar-profile-icon-vector.jpg?s=612x612&w=0&k=20&c=BIbFwuv7FxTWvh5S3vB6bkT0Qv8Vn8N5Ffseq84ClGI="
+                }
                 alt={userProfile?.username}
                 className="object-cover"
+                onError={(e) => {
+                  e.target.src =
+                    "https://media.istockphoto.com/id/1337144146/vector/default-avatar-profile-icon-vector.jpg?s=612x612&w=0&k=20&c=BIbFwuv7FxTWvh5S3vB6bkT0Qv8Vn8N5Ffseq84ClGI=";
+                }}
               />
               <AvatarFallback className="text-3xl font-bold bg-gradient-to-r from-blue-500 to-purple-500 text-white">
                 {userProfile?.username?.substring(0, 2)?.toUpperCase()}
@@ -716,7 +723,16 @@ const PostsGrid = ({ posts = [] }) => {
                   {/* معلومات الكاتب */}
                   <div className="flex items-center gap-3 mb-4">
                     <Avatar className="h-12 w-12 border-2 border-white shadow-sm">
-                      <AvatarImage src={selectedPost?.author?.profilePicture} />
+                      <AvatarImage
+                        src={
+                          selectedPost?.author?.profilePicture ||
+                          "https://media.istockphoto.com/id/1337144146/vector/default-avatar-profile-icon-vector.jpg?s=612x612&w=0&k=20&c=BIbFwuv7FxTWvh5S3vB6bkT0Qv8Vn8N5Ffseq84ClGI="
+                        }
+                        onError={(e) => {
+                          e.target.src =
+                            "https://media.istockphoto.com/id/1337144146/vector/default-avatar-profile-icon-vector.jpg?s=612x612&w=0&k=20&c=BIbFwuv7FxTWvh5S3vB6bkT0Qv8Vn8N5Ffseq84ClGI=";
+                        }}
+                      />
                       <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500 text-white">
                         {selectedPost?.author?.username
                           ?.substring(0, 2)
@@ -819,7 +835,14 @@ const PostsGrid = ({ posts = [] }) => {
                             >
                               <Avatar className="h-8 w-8 border-2 border-white shadow-sm flex-shrink-0">
                                 <AvatarImage
-                                  src={comment?.user?.profilePicture}
+                                  src={
+                                    comment?.user?.profilePicture ||
+                                    "https://media.istockphoto.com/id/1337144146/vector/default-avatar-profile-icon-vector.jpg?s=612x612&w=0&k=20&c=BIbFwuv7FxTWvh5S3vB6bkT0Qv8Vn8N5Ffseq84ClGI="
+                                  }
+                                  onError={(e) => {
+                                    e.target.src =
+                                      "https://media.istockphoto.com/id/1337144146/vector/default-avatar-profile-icon-vector.jpg?s=612x612&w=0&k=20&c=BIbFwuv7FxTWvh5S3vB6bkT0Qv8Vn8N5Ffseq84ClGI=";
+                                  }}
                                 />
                                 <AvatarFallback className="bg-gray-200 text-gray-700 text-xs">
                                   {comment?.user?.username
@@ -868,7 +891,16 @@ const PostsGrid = ({ posts = [] }) => {
                   <div className="mt-3 pt-2 sticky bottom-0 bg-white">
                     <div className="flex items-start gap-2">
                       <Avatar className="h-8 w-8 flex-shrink-0">
-                        <AvatarImage src={user?.profilePicture} />
+                        <AvatarImage
+                          src={
+                            user?.profilePicture ||
+                            "https://media.istockphoto.com/id/1337144146/vector/default-avatar-profile-icon-vector.jpg?s=612x612&w=0&k=20&c=BIbFwuv7FxTWvh5S3vB6bkT0Qv8Vn8N5Ffseq84ClGI="
+                          }
+                          onError={(e) => {
+                            e.target.src =
+                              "https://media.istockphoto.com/id/1337144146/vector/default-avatar-profile-icon-vector.jpg?s=612x612&w=0&k=20&c=BIbFwuv7FxTWvh5S3vB6bkT0Qv8Vn8N5Ffseq84ClGI=";
+                          }}
+                        />
                         <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xs">
                           {user?.username?.substring(0, 2)?.toUpperCase()}
                         </AvatarFallback>

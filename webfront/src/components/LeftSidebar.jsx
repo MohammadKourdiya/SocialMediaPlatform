@@ -64,8 +64,6 @@ const LeftSidebar = () => {
   const sidebarItems = [
     { icon: <Home className="w-5 h-5" />, text: "Home" },
     { icon: <Search className="w-5 h-5" />, text: "Search" },
-    { icon: <TrendingUp className="w-5 h-5" />, text: "Explore" },
-    { icon: <MessageCircle className="w-5 h-5" />, text: "Messages" },
     { icon: <Heart className="w-5 h-5" />, text: "Notifications" },
     { icon: <PlusSquare className="w-5 h-5" />, text: "Create" },
     {

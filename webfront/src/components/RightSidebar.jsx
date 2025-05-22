@@ -17,8 +17,20 @@ const RightSidebar = () => {
             className="hover:opacity-90 transition-opacity"
           >
             <Avatar className="w-14 h-14">
-              <AvatarImage src={user?.profilePicture} alt="profile_picture" />
-              <AvatarFallback>CN</AvatarFallback>
+              <AvatarImage
+                src={
+                  user?.profilePicture ||
+                  "https://media.istockphoto.com/id/1337144146/vector/default-avatar-profile-icon-vector.jpg?s=612x612&w=0&k=20&c=BIbFwuv7FxTWvh5S3vB6bkT0Qv8Vn8N5Ffseq84ClGI="
+                }
+                alt="profile_picture"
+                onError={(e) => {
+                  e.target.src =
+                    "https://media.istockphoto.com/id/1337144146/vector/default-avatar-profile-icon-vector.jpg?s=612x612&w=0&k=20&c=BIbFwuv7FxTWvh5S3vB6bkT0Qv8Vn8N5Ffseq84ClGI=";
+                }}
+              />
+              <AvatarFallback>
+                {user?.username?.substring(0, 2)?.toUpperCase() || "UN"}
+              </AvatarFallback>
             </Avatar>
           </Link>
           <div className="flex-1 min-w-0">
