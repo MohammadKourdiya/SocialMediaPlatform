@@ -41,7 +41,6 @@ const upload = require("../middlewares/multer");
  *         description: Internal server error
  */
 
-
 /**
  * @swagger
  * components:
@@ -226,6 +225,12 @@ router.put(
 router.put("/change-password", protect, userController.changePassword);
 router.get("/search", protect, userController.searchUsers);
 
+// مسارات المتابعة
+router.post("/follow/:userId", protect, userController.followUser);
+router.post("/unfollow/:userId", protect, userController.unfollowUser);
+router.get("/followers/:userId", protect, userController.getFollowers);
+router.get("/following/:userId", protect, userController.getFollowing);
+
 /**
  * @swagger
  * /api/users/search:
@@ -256,6 +261,5 @@ router.get("/search", protect, userController.searchUsers);
  *                   items:
  *                     $ref: '#/components/schemas/User'
  */
-
 
 module.exports = router;

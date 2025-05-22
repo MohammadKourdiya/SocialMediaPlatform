@@ -46,10 +46,8 @@ const Profile = () => {
   console.log("userProfile", userProfile);
 
   const isLoggedInUserProfile = user?.username === userProfile?.username;
-  const isFollowing = userProfile?.followers?.includes(user?._id);
-
-  useGetUserProfile(username, reduxForceUpdate);
-
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("posts");
   const [bioEdit, setBioEdit] = useState("");
   const [isEditingBio, setIsEditingBio] = useState(false);
@@ -59,15 +57,6 @@ const Profile = () => {
   const [loadingPic, setLoadingPic] = useState(false);
   const navigate = useNavigate();
   const [userPosts, setUserPosts] = useState([]);
-
-  const handleTabChange = (tab) => {
-    setActiveTab(tab);
-  };
-
-  const handleEditBio = () => {
-    setBioEdit(userProfile?.bio || "");
-    setIsEditingBio(true);
-  };
 
   // دالة جلب البروفايل من السيرفر مباشرة
   const fetchUserProfile = async () => {
@@ -87,6 +76,108 @@ const Profile = () => {
     } catch (error) {
       console.log(error);
     }
+  };
+
+  // دالة متابعة المستخدم
+  const handleFollow = async () => {
+    if (!user) {
+      toast.error("يجب تسجيل الدخول أولاً للمتابعة");
+      return;
+    }
+
+    try {
+      setFollowLoading(true);
+      const res = await axios.post(
+        `http://localhost:5000/api/users/follow/${userProfile?._id}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          withCredentials: true,
+        }
+      );
+
+      if (res.data.success) {
+        setIsFollowing(true);
+        toast.success("تمت المتابعة بنجاح");
+        await fetchUserProfile();
+      }
+    } catch (error) {
+      console.error("خطأ في متابعة المستخدم:", error);
+      toast.error(error.response?.data?.error || "حدث خطأ أثناء المتابعة");
+    } finally {
+      setFollowLoading(false);
+    }
+  };
+
+  // دالة إلغاء متابعة المستخدم
+  const handleUnfollow = async () => {
+    if (!user) {
+      toast.error("يجب تسجيل الدخول أولاً");
+      return;
+    }
+
+    try {
+      setFollowLoading(true);
+      const res = await axios.post(
+        `http://localhost:5000/api/users/unfollow/${userProfile?._id}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          withCredentials: true,
+        }
+      );
+
+      if (res.data.success) {
+        setIsFollowing(false);
+        toast.success("تم إلغاء المتابعة بنجاح");
+        await fetchUserProfile();
+      }
+    } catch (error) {
+      console.error("خطأ في إلغاء متابعة المستخدم:", error);
+      toast.error(
+        error.response?.data?.error || "حدث خطأ أثناء إلغاء المتابعة"
+      );
+    } finally {
+      setFollowLoading(false);
+    }
+  };
+
+  // التحقق من حالة المتابعة
+  React.useEffect(() => {
+    if (userProfile && user) {
+      const isUserFollowing = userProfile?.followers?.some(
+        (followerId) => followerId === user?._id
+      );
+      setIsFollowing(isUserFollowing);
+    }
+  }, [userProfile, user]);
+
+  useGetUserProfile(username, reduxForceUpdate);
+
+  const [loading, setLoading] = useState(true);
+
+  const fetchData = async () => {
+    setLoading(true);
+    await fetchUserProfile();
+    await fetchUserPosts();
+    setLoading(false);
+  };
+
+  React.useEffect(() => {
+    fetchData();
+  }, [username, reduxForceUpdate]);
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+  };
+
+  const handleEditBio = () => {
+    setBioEdit(userProfile?.bio || "");
+    setIsEditingBio(true);
   };
 
   const handleSaveBio = async () => {
@@ -280,8 +371,10 @@ const Profile = () => {
                       variant="outline"
                       size="sm"
                       className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 transition-colors"
+                      onClick={handleUnfollow}
+                      disabled={followLoading}
                     >
-                      إلغاء المتابعة
+                      {followLoading ? "جاري التحميل..." : "إلغاء المتابعة"}
                     </Button>
                     <Button
                       className="bg-blue-500 hover:bg-blue-600 text-white"
@@ -294,8 +387,10 @@ const Profile = () => {
                   <Button
                     className="bg-blue-500 hover:bg-blue-600 text-white shadow-md transition-colors"
                     size="sm"
+                    onClick={handleFollow}
+                    disabled={followLoading}
                   >
-                    متابعة
+                    {followLoading ? "جاري التحميل..." : "متابعة"}
                   </Button>
                 )}
               </div>

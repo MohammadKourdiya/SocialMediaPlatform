@@ -1,17 +1,99 @@
-import React from "react";
-import { useSelector } from "react-redux";
+import React, { useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
+import axios from "axios";
+import { toast } from "sonner";
+import { setUserProfile } from "../redux/authSlice";
 
 const SuggestedUsers = () => {
-  const { suggestedUsers } = useSelector((store) => store.auth);
+  const { suggestedUsers, user } = useSelector((store) => store.auth);
+  const dispatch = useDispatch();
+  const [followLoading, setFollowLoading] = useState({});
+  const [followingStates, setFollowingStates] = useState({});
+
+  // Initialize following states based on user's followers
+  React.useEffect(() => {
+    if (suggestedUsers && user) {
+      const initialStates = {};
+      suggestedUsers.forEach((suggestedUser) => {
+        initialStates[suggestedUser._id] =
+          suggestedUser.followers?.includes(user._id) || false;
+      });
+      setFollowingStates(initialStates);
+    }
+  }, [suggestedUsers, user]);
+
+  const handleFollow = async (userId) => {
+    if (!user) {
+      toast.error("يجب تسجيل الدخول أولاً للمتابعة");
+      return;
+    }
+
+    try {
+      setFollowLoading((prev) => ({ ...prev, [userId]: true }));
+      const res = await axios.post(
+        `http://localhost:5000/api/users/follow/${userId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          withCredentials: true,
+        }
+      );
+
+      if (res.data.success) {
+        setFollowingStates((prev) => ({ ...prev, [userId]: true }));
+        toast.success("تمت المتابعة بنجاح");
+      }
+    } catch (error) {
+      console.error("خطأ في متابعة المستخدم:", error);
+      toast.error(error.response?.data?.error || "حدث خطأ أثناء المتابعة");
+    } finally {
+      setFollowLoading((prev) => ({ ...prev, [userId]: false }));
+    }
+  };
+
+  const handleUnfollow = async (userId) => {
+    if (!user) {
+      toast.error("يجب تسجيل الدخول أولاً");
+      return;
+    }
+
+    try {
+      setFollowLoading((prev) => ({ ...prev, [userId]: true }));
+      const res = await axios.post(
+        `http://localhost:5000/api/users/unfollow/${userId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          withCredentials: true,
+        }
+      );
+
+      if (res.data.success) {
+        setFollowingStates((prev) => ({ ...prev, [userId]: false }));
+        toast.success("تم إلغاء المتابعة بنجاح");
+      }
+    } catch (error) {
+      console.error("خطأ في إلغاء متابعة المستخدم:", error);
+      toast.error(
+        error.response?.data?.error || "حدث خطأ أثناء إلغاء المتابعة"
+      );
+    } finally {
+      setFollowLoading((prev) => ({ ...prev, [userId]: false }));
+    }
+  };
 
   return (
     <div className="space-y-4">
       {suggestedUsers.map((user) => (
-        <div key={user._id} className="flex items-center justify-between group">
-          <div className="flex items-center gap-3 min-w-0">
+        <div key={user?._id} className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
             <Link
               to={`/profile/${user?.username}`}
               className="flex-shrink-0 hover:opacity-90 transition-opacity"
@@ -48,9 +130,23 @@ const SuggestedUsers = () => {
           <Button
             variant="ghost"
             size="sm"
-            className="text-[#3B82F6] hover:text-[#2563EB] hover:bg-[#EFF6FF] font-medium"
+            className={
+              followingStates[user._id]
+                ? "text-red-600 hover:bg-red-50 hover:text-red-700 font-medium"
+                : "text-[#3B82F6] hover:text-[#2563EB] hover:bg-[#EFF6FF] font-medium"
+            }
+            onClick={() =>
+              followingStates[user._id]
+                ? handleUnfollow(user._id)
+                : handleFollow(user._id)
+            }
+            disabled={followLoading[user._id]}
           >
-            Follow
+            {followLoading[user._id]
+              ? "جاري التحميل..."
+              : followingStates[user._id]
+              ? "إلغاء المتابعة"
+              : "متابعة"}
           </Button>
         </div>
       ))}

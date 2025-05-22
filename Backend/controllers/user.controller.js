@@ -300,6 +300,176 @@ const searchUsers = async (req, res) => {
   }
 };
 
+// متابعة مستخدم
+const followUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // التحقق من أن المستخدم لا يحاول متابعة نفسه
+    if (userId === req.user._id.toString()) {
+      return res.status(400).json({
+        success: false,
+        error: "لا يمكنك متابعة نفسك",
+      });
+    }
+
+    // البحث عن المستخدم المراد متابعته
+    const userToFollow = await User.findById(userId);
+    if (!userToFollow) {
+      return res.status(404).json({
+        success: false,
+        error: "المستخدم غير موجود",
+      });
+    }
+
+    // البحث عن المستخدم الحالي
+    const currentUser = await User.findById(req.user._id);
+
+    // التحقق مما إذا كان المستخدم يتابع بالفعل هذا المستخدم
+    if (currentUser.following.includes(userId)) {
+      return res.status(400).json({
+        success: false,
+        error: "أنت تتابع هذا المستخدم بالفعل",
+      });
+    }
+
+    // إضافة المستخدم المراد متابعته إلى قائمة المتابعين للمستخدم الحالي
+    await User.findByIdAndUpdate(req.user._id, {
+      $push: { following: userId },
+    });
+
+    // إضافة المستخدم الحالي إلى قائمة المتابعين للمستخدم المراد متابعته
+    await User.findByIdAndUpdate(userId, {
+      $push: { followers: req.user._id },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "تمت المتابعة بنجاح",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
+// إلغاء متابعة مستخدم
+const unfollowUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // التحقق من أن المستخدم لا يحاول إلغاء متابعة نفسه
+    if (userId === req.user._id.toString()) {
+      return res.status(400).json({
+        success: false,
+        error: "لا يمكنك إلغاء متابعة نفسك",
+      });
+    }
+
+    // البحث عن المستخدم المراد إلغاء متابعته
+    const userToUnfollow = await User.findById(userId);
+    if (!userToUnfollow) {
+      return res.status(404).json({
+        success: false,
+        error: "المستخدم غير موجود",
+      });
+    }
+
+    // البحث عن المستخدم الحالي
+    const currentUser = await User.findById(req.user._id);
+
+    // التحقق مما إذا كان المستخدم لا يتابع هذا المستخدم
+    if (!currentUser.following.includes(userId)) {
+      return res.status(400).json({
+        success: false,
+        error: "أنت لا تتابع هذا المستخدم",
+      });
+    }
+
+    // إزالة المستخدم المراد إلغاء متابعته من قائمة المتابعين للمستخدم الحالي
+    await User.findByIdAndUpdate(req.user._id, {
+      $pull: { following: userId },
+    });
+
+    // إزالة المستخدم الحالي من قائمة المتابعين للمستخدم المراد إلغاء متابعته
+    await User.findByIdAndUpdate(userId, {
+      $pull: { followers: req.user._id },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "تم إلغاء المتابعة بنجاح",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
+// الحصول على قائمة المتابعين
+const getFollowers = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // البحث عن المستخدم
+    const user = await User.findById(userId).populate(
+      "followers",
+      "username profilePicture bio"
+    );
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: "المستخدم غير موجود",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: user.followers,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
+// الحصول على قائمة المتابعين
+const getFollowing = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // البحث عن المستخدم
+    const user = await User.findById(userId).populate(
+      "following",
+      "username profilePicture bio"
+    );
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: "المستخدم غير موجود",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: user.following,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -308,4 +478,8 @@ module.exports = {
   updateProfilePicture,
   changePassword,
   searchUsers,
+  followUser,
+  unfollowUser,
+  getFollowers,
+  getFollowing,
 };

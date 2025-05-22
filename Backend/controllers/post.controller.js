@@ -63,6 +63,17 @@ const addNewPost = async (req, res) => {
 };
 const getAllPost = async (req, res) => {
   try {
+    // الحصول على المستخدم الحالي وقائمة المتابَعين
+    let userFollowing = [];
+
+    if (req.user) {
+      const currentUser = await User.findById(req.user).select("following");
+      if (currentUser && currentUser.following) {
+        userFollowing = currentUser.following;
+      }
+    }
+
+    // الحصول على جميع المنشورات
     const posts = await Post.find()
       .sort({ createdAt: -1 })
       .populate({ path: "author", select: "username profilePicture" })
@@ -74,6 +85,25 @@ const getAllPost = async (req, res) => {
           select: "username profilePicture",
         },
       });
+
+    // ترتيب المنشورات بحيث تكون منشورات المتابَعين في المقدمة
+    if (userFollowing.length > 0) {
+      posts.sort((a, b) => {
+        const aIsFollowing = userFollowing.some(
+          (id) => id.toString() === a.author._id.toString()
+        );
+        const bIsFollowing = userFollowing.some(
+          (id) => id.toString() === b.author._id.toString()
+        );
+
+        if (aIsFollowing && !bIsFollowing) return -1;
+        if (!aIsFollowing && bIsFollowing) return 1;
+
+        // إذا كان كلاهما متابَع أو كلاهما غير متابَع، قم بالترتيب حسب التاريخ
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      });
+    }
+
     return res.status(200).json({
       posts,
       success: true,
