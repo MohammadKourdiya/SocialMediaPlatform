@@ -949,7 +949,14 @@ const PostsGrid = ({ posts = [] }) => {
                               </Avatar>
                               <div className="flex-1 min-w-0">
                                 <div className="flex justify-between items-center mb-1">
-                                  <span className="font-semibold text-sm text-gray-800 hover:underline cursor-pointer">
+                                  <span
+                                    className="font-semibold text-sm text-gray-800 hover:underline cursor-pointer"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      navigate(`/profile/${user?.username}`);
+                                      setShowPostDialog(false);
+                                    }}
+                                  >
                                     {comment?.user?.username || "مستخدم"}
                                   </span>
                                   {comment?.createdAt && (

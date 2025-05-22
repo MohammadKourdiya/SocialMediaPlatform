@@ -10,6 +10,7 @@ import axios from "axios";
 import { toast } from "sonner";
 import { setPosts, setSelectedPost } from "../redux/postSlice";
 import { Badge } from "./ui/badge";
+import { useNavigate } from "react-router-dom";
 
 const Post = ({ post }) => {
   // التحقق من البيانات عند استلام المنشور
@@ -20,6 +21,7 @@ const Post = ({ post }) => {
   const { user } = useSelector((store) => store.auth);
   const { posts } = useSelector((store) => store.post);
   const postId = post?.id || post?._id;
+  const navigate = useNavigate();
   // التأكد من وجود البيانات الأساسية وتوحيد استخدام المعرف
   const postData = useMemo(
     () => ({
@@ -330,7 +332,15 @@ const Post = ({ post }) => {
 
         {/* Caption */}
         <p className="text-[#1F2937] mb-2">
-          <span className="font-semibold mr-2">{post.author?.username}</span>
+          <span
+            className="font-semibold mr-2 hover:underline cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/profile/${post.author?.username}`);
+            }}
+          >
+            {post.author?.username}
+          </span>
           {post.caption}
         </p>
 
